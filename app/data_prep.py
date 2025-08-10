@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 # from pathlib import Path
 # from typing import Tuple
-from .CONSTANTS import RAW_JSON, CLEAN_CSV
+from CONSTANTS import RAW_JSON, CLEAN_CSV
 
 
 BOROUGH_PREFIXES = {
@@ -71,12 +71,9 @@ def build_clean_csv(raw_json, out_csv):
     if "borough" not in df.columns:
         df["borough"] = df.get("prop_id", "").apply(infer_borough)
 
-    # # add primary key if missing
-    # if "court_id" not in df.columns:
-    #     df = df.reset_index(drop=False).rename(columns={"index": "court_id"})
 
     # Clean schema
-    clean = df[["prop_id", "name", "borough", "location", "Num_of_Courts", "lat", "lon"]].copy()
+    clean = df[["prop_id", "name", "borough", "location", "num_of_courts", "lat", "lon"]].copy()
     clean = clean.rename(columns={"prop_id": "court_id"})
     clean.columns = [col.title() for col in clean.columns]
 
