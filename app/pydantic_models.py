@@ -87,12 +87,12 @@ class Court(BaseModel):
         }
     '''
 
-    court_id: int
-    name: str
-    borough: Optional[str] = ""
-    lat: float
-    lon: float
-    distance_km: Optional[float] = None
+    Court_Id: str
+    Name: str
+    Borough: Optional[str] = ""
+    Lat: float
+    Lon: float
+    Distance_Km: Optional[float] = None
 
 
 class NearestResp(BaseModel):
