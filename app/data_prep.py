@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 # from pathlib import Path
 # from typing import Tuple
-from CONSTANTS import RAW_JSON, CLEAN_CSV
+from app.CONSTANTS import RAW_JSON, CLEAN_CSV
 
 
 BOROUGH_PREFIXES = {
