@@ -24,6 +24,10 @@
     <input id="address" type="text" placeholder="Enter an address, e.g. 136 E 55th St, NYC" style="width:260px;">
     <button id="btnSearch">Search</button>
   </div>
+  <!-- Resolved address label -->
+  <div style="font-size:12px; opacity:0.8; margin-top:4px;">
+    <span id="addrLabel"></span>
+  </div>
 
   <!-- Map container -->
   <div id="map" style="height:400px; margin-top:8px;"></div>
@@ -46,6 +50,8 @@
 
     // User marker
     let userMarker = null;
+    const addrLabel = document.getElementById('addrLabel');
+
     function setUserMarker(lat, lon, label = 'You are here') {
       if (userMarker) userMarker.remove();
       userMarker = L.marker([lat, lon]).addTo(map).bindPopup(label);
@@ -79,12 +85,12 @@
       }
     }
 
-    // Fetch nearest courts from backend
+    // Fetch nearest courts
     async function fetchNearest(lat, lon) {
       try {
         const res = await fetch(`/nearest?lat=${lat}&lon=${lon}&limit=10`);
         if (!res.ok) throw new Error('Nearest lookup failed');
-        const data = await res.json(); // expects { count, results: [...] }
+        const data = await res.json(); // { count, results }
         addCourts(data.results || []);
       } catch (e) {
         console.error(e);
@@ -92,7 +98,23 @@
       }
     }
 
-    // Geolocate and drop a marker + load nearest
+    // Reverse geocode current coords -> label
+    async function reverseGeocode(lat, lon) {
+      try {
+        const res = await fetch('/reverse_geocode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat, lon })
+        });
+        if (!res.ok) { addrLabel.textContent = ''; return; }
+        const data = await res.json(); // { display_name }
+        addrLabel.textContent = data.display_name || '';
+      } catch {
+        addrLabel.textContent = '';
+      }
+    }
+
+    // Geolocate and drop a marker + load nearest + label
     document.getElementById('btnLocate').addEventListener('click', () => {
       if (!navigator.geolocation) {
         alert('Geolocation not supported by your browser.');
@@ -102,6 +124,7 @@
         (pos) => {
           const { latitude, longitude } = pos.coords;
           setUserMarker(latitude, longitude);
+          reverseGeocode(latitude, longitude);
           fetchNearest(latitude, longitude);
         },
         (err) => {
@@ -112,7 +135,7 @@
       );
     });
 
-    // Address -> /geocode -> center + load nearest
+    // Address -> /geocode -> center + load nearest + label
     document.getElementById('btnSearch').addEventListener('click', async () => {
       const address = document.getElementById('address').value.trim();
       if (!address) return;
@@ -127,9 +150,10 @@
           alert('Address not found');
           return;
         }
-        const data = await res.json(); // expects { lat, lon, display_name }
+        const data = await res.json(); // { lat, lon, display_name }
         setUserMarker(data.lat, data.lon, data.display_name || 'Selected location');
         if (userMarker) userMarker.openPopup();
+        addrLabel.textContent = data.display_name || '';
         fetchNearest(data.lat, data.lon);
       } catch (e) {
         console.error(e);
@@ -137,7 +161,7 @@
       }
     });
 
-    console.log("Map initialized with nearest-courts plotting");
+    console.log("Map initialized with address label + reverse geocoding");
   </script>
 
 </body>
