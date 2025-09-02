@@ -44,7 +44,7 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Markers
+    // User marker
     let userMarker = null;
     function setUserMarker(lat, lon, label = 'You are here') {
       if (userMarker) userMarker.remove();
@@ -52,7 +52,47 @@
       map.setView([lat, lon], 14);
     }
 
-    // Geolocate and drop a marker
+    // Court markers
+    let courtMarkers = [];
+    function clearCourts() {
+      courtMarkers.forEach(m => m.remove());
+      courtMarkers = [];
+    }
+    function addCourts(list) {
+      clearCourts();
+      const bounds = [];
+      list.forEach(c => {
+        const html = `
+          <div style="font-size:12px;line-height:1.3">
+            <b>${c.name}</b><br>
+            ${c.borough ? `${c.borough}<br>` : ""}
+            ${typeof c.distance_km !== 'undefined' ? `${c.distance_km} km<br>` : ""}
+            <a href="/courts/${c.court_id}" target="_blank">Details</a>
+          </div>`;
+        const m = L.marker([c.lat, c.lon]).addTo(map).bindPopup(html);
+        courtMarkers.push(m);
+        bounds.push([c.lat, c.lon]);
+      });
+      if (bounds.length) {
+        if (userMarker) bounds.push(userMarker.getLatLng());
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+    }
+
+    // Fetch nearest courts from backend
+    async function fetchNearest(lat, lon) {
+      try {
+        const res = await fetch(`/nearest?lat=${lat}&lon=${lon}&limit=10`);
+        if (!res.ok) throw new Error('Nearest lookup failed');
+        const data = await res.json(); // expects { count, results: [...] }
+        addCourts(data.results || []);
+      } catch (e) {
+        console.error(e);
+        alert('Failed to load nearby courts.');
+      }
+    }
+
+    // Geolocate and drop a marker + load nearest
     document.getElementById('btnLocate').addEventListener('click', () => {
       if (!navigator.geolocation) {
         alert('Geolocation not supported by your browser.');
@@ -62,6 +102,7 @@
         (pos) => {
           const { latitude, longitude } = pos.coords;
           setUserMarker(latitude, longitude);
+          fetchNearest(latitude, longitude);
         },
         (err) => {
           console.error(err);
@@ -71,7 +112,7 @@
       );
     });
 
-    // Address -> call backend /geocode and center map
+    // Address -> /geocode -> center + load nearest
     document.getElementById('btnSearch').addEventListener('click', async () => {
       const address = document.getElementById('address').value.trim();
       if (!address) return;
@@ -89,13 +130,14 @@
         const data = await res.json(); // expects { lat, lon, display_name }
         setUserMarker(data.lat, data.lon, data.display_name || 'Selected location');
         if (userMarker) userMarker.openPopup();
+        fetchNearest(data.lat, data.lon);
       } catch (e) {
         console.error(e);
         alert('Geocoding request failed.');
       }
     });
 
-    console.log("Map initialized with geolocation + address search");
+    console.log("Map initialized with nearest-courts plotting");
   </script>
 
 </body>
