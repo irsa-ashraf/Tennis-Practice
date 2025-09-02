@@ -18,6 +18,9 @@
   <h1>NYC Tennis Courts</h1>
   <p>Test landing page for app.</p>
 
+  <!-- Use my location -->
+  <button id="btnLocate">Use my location</button>
+
   <!-- Map container -->
   <div id="map" style="height:400px;"></div>
 
@@ -43,8 +46,20 @@
       .bindPopup('NYC Center')
       .openPopup();
 
-    console.log("Map initialized with center marker");
-  </script>
+    // Geolocate and drop a marker
+    let userMarker = null;
 
-</body>
-</html>
+    function setUserMarker(lat, lon) {
+      if (userMarker) userMarker.remove();
+      userMarker = L.marker([lat, lon]).addTo(map).bindPopup('You are here');
+      map.setView([lat, lon], 14);
+    }
+
+    document.getElementById('btnLocate').addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        alert('Geolocation not supported by your browser.');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
