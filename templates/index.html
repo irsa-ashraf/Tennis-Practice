@@ -21,9 +21,23 @@
   <!-- Map container -->
   <div id="map" style="height:400px;"></div>
 
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
   <script>
-    // Your JavaScript goes here
-    console.log("App loaded");
+    // Initialize the map
+    const map = L.map('map').setView([40.7128, -74.0060], 12); // NYC coords
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    console.log("Map initialized");
   </script>
 
 </body>
