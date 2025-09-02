@@ -18,11 +18,15 @@
   <h1>NYC Tennis Courts</h1>
   <p>Test landing page for app.</p>
 
-  <!-- Use my location -->
-  <button id="btnLocate">Use my location</button>
+  <!-- Controls -->
+  <div>
+    <button id="btnLocate">Use my location</button>
+    <input id="address" type="text" placeholder="Enter an address, e.g. 136 E 55th St, NYC" style="width:260px;">
+    <button id="btnSearch">Search</button>
+  </div>
 
   <!-- Map container -->
-  <div id="map" style="height:400px;"></div>
+  <div id="map" style="height:400px; margin-top:8px;"></div>
 
   <!-- Leaflet JS -->
   <script
@@ -40,21 +44,15 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Add a marker at the center with a popup
-    L.marker([40.7128, -74.0060])
-      .addTo(map)
-      .bindPopup('NYC Center')
-      .openPopup();
-
-    // Geolocate and drop a marker
+    // Markers
     let userMarker = null;
-
-    function setUserMarker(lat, lon) {
+    function setUserMarker(lat, lon, label = 'You are here') {
       if (userMarker) userMarker.remove();
-      userMarker = L.marker([lat, lon]).addTo(map).bindPopup('You are here');
+      userMarker = L.marker([lat, lon]).addTo(map).bindPopup(label);
       map.setView([lat, lon], 14);
     }
 
+    // Geolocate and drop a marker
     document.getElementById('btnLocate').addEventListener('click', () => {
       if (!navigator.geolocation) {
         alert('Geolocation not supported by your browser.');
@@ -63,3 +61,42 @@
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
+          setUserMarker(latitude, longitude);
+        },
+        (err) => {
+          console.error(err);
+          alert('Could not get your location.');
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+
+    // Address -> call backend /geocode and center map
+    document.getElementById('btnSearch').addEventListener('click', async () => {
+      const address = document.getElementById('address').value.trim();
+      if (!address) return;
+
+      try {
+        const res = await fetch('/geocode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address })
+        });
+        if (!res.ok) {
+          alert('Address not found');
+          return;
+        }
+        const data = await res.json(); // expects { lat, lon, display_name }
+        setUserMarker(data.lat, data.lon, data.display_name || 'Selected location');
+        if (userMarker) userMarker.openPopup();
+      } catch (e) {
+        console.error(e);
+        alert('Geocoding request failed.');
+      }
+    });
+
+    console.log("Map initialized with geolocation + address search");
+  </script>
+
+</body>
+</html>
