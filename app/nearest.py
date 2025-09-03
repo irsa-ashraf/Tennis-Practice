@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import BallTree
 from typing import Tuple
-from CONSTANTS import EARTH_RADIUS_KM
+from app.CONSTANTS import EARTH_RADIUS_KM
 
 class NearestIndex:
     def __init__(self, df: pd.DataFrame):
