@@ -77,7 +77,10 @@
       list.forEach(c => {
         const name = c.Name ?? "";
         const borough = c.Borough ?? "";
-        const dist = (c.Distance_Km !== undefined && c.Distance_Km !== null) ? `${c.Distance_Km} km` : "";
+        const rawDist = c.Distance_Km;
+        const dist = (typeof rawDist === 'number')
+          ? `${rawDist.toFixed(2)} km`
+          : (rawDist ?? "");
         const lat = c.Lat;
         const lon = c.Lon;
         const id = c.Court_Id;
@@ -99,7 +102,7 @@
       }
     }
 
-    // Fetch nearest courts (Title-Case fields from API)
+    // Fetch nearest courts
     async function fetchNearest(lat, lon) {
       const url = `${BASE_URL}/nearest?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=10`;
       try {
@@ -159,8 +162,16 @@
       );
     });
 
-    // Address -> /geocode -> center + load nearest + label
-    document.getElementById('btnSearch').addEventListener('click', async () => {
+    // Address search (click + Enter)
+    document.getElementById('btnSearch').addEventListener('click', onSearch);
+    document.getElementById('address').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onSearch();
+      }
+    });
+
+    async function onSearch() {
       const address = document.getElementById('address').value.trim();
       if (!address) return;
 
@@ -183,9 +194,9 @@
         console.error(e);
         alert('Geocoding request failed.');
       }
-    });
+    }
 
-    console.log("Map initialized with address label + reverse geocoding");
+    console.log("Map initialized with address label + reverse geocoding + enter-to-search + distance formatting");
   </script>
 
 </body>
