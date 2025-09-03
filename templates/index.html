@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>My App</title>
+  <title>NYC Tennis Courts</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Leaflet CSS for maps -->
@@ -16,14 +16,17 @@
 <body>
 
   <h1>NYC Tennis Courts</h1>
-  <p>Test landing page for app.</p>
+  <p>See the nearest tennis courts</p>
+
+  <div id="status" style="font-size:12px; opacity:0.8; margin-top:4px; color:#e6a700;"></div>
 
   <!-- Controls -->
   <div>
     <button id="btnLocate">Use my location</button>
-    <input id="address" type="text" placeholder="Enter an address, e.g. 136 E 55th St, NYC" style="width:260px;">
+    <input id="address" type="text" placeholder="Enter an address, e.g. 399 Park Avenue, NYC" style="width:260px;">
     <button id="btnSearch">Search</button>
   </div>
+
   <!-- Resolved address label -->
   <div style="font-size:12px; opacity:0.8; margin-top:4px;">
     <span id="addrLabel"></span>
@@ -40,6 +43,12 @@
   ></script>
 
   <script>
+    // Base URL for API calls. If served by FastAPI, keep "". If opened directly, fallback to localhost.
+    const BASE_URL = location.origin.startsWith('http') ? "" : "http://127.0.0.1:8000";
+
+    const statusEl = document.getElementById('status');
+    const addrLabel = document.getElementById('addrLabel');
+
     // Initialize the map
     const map = L.map('map').setView([40.7128, -74.0060], 12); // NYC coords
 
@@ -50,8 +59,6 @@
 
     // User marker
     let userMarker = null;
-    const addrLabel = document.getElementById('addrLabel');
-
     function setUserMarker(lat, lon, label = 'You are here') {
       if (userMarker) userMarker.remove();
       userMarker = L.marker([lat, lon]).addTo(map).bindPopup(label);
@@ -68,16 +75,23 @@
       clearCourts();
       const bounds = [];
       list.forEach(c => {
+        const name = c.Name ?? "";
+        const borough = c.Borough ?? "";
+        const dist = (c.Distance_Km !== undefined && c.Distance_Km !== null) ? `${c.Distance_Km} km` : "";
+        const lat = c.Lat;
+        const lon = c.Lon;
+        const id = c.Court_Id;
+
         const html = `
           <div style="font-size:12px;line-height:1.3">
-            <b>${c.name}</b><br>
-            ${c.borough ? `${c.borough}<br>` : ""}
-            ${typeof c.distance_km !== 'undefined' ? `${c.distance_km} km<br>` : ""}
-            <a href="/courts/${c.court_id}" target="_blank">Details</a>
+            <b>${name}</b><br>
+            ${borough ? `${borough}<br>` : ""}
+            ${dist ? `${dist}<br>` : ""}
+            <a href="/courts/${id}" target="_blank">Details</a>
           </div>`;
-        const m = L.marker([c.lat, c.lon]).addTo(map).bindPopup(html);
+        const m = L.marker([lat, lon]).addTo(map).bindPopup(html);
         courtMarkers.push(m);
-        bounds.push([c.lat, c.lon]);
+        bounds.push([lat, lon]);
       });
       if (bounds.length) {
         if (userMarker) bounds.push(userMarker.getLatLng());
@@ -85,15 +99,25 @@
       }
     }
 
-    // Fetch nearest courts
+    // Fetch nearest courts (Title-Case fields from API)
     async function fetchNearest(lat, lon) {
+      const url = `${BASE_URL}/nearest?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=10`;
       try {
-        const res = await fetch(`/nearest?lat=${lat}&lon=${lon}&limit=10`);
-        if (!res.ok) throw new Error('Nearest lookup failed');
-        const data = await res.json(); // { count, results }
+        console.log("[nearest] GET", url);
+        const res = await fetch(url);
+        const text = await res.text();
+        if (!res.ok) {
+          console.error("[nearest] HTTP", res.status, text);
+          statusEl.textContent = `Nearest failed: HTTP ${res.status}`;
+          throw new Error(`Nearest lookup failed: ${res.status}`);
+        }
+        const data = JSON.parse(text); // { count, results: [...] }
+        console.log("[nearest] OK", data);
+        statusEl.textContent = "";
         addCourts(data.results || []);
       } catch (e) {
-        console.error(e);
+        console.error("[nearest] EXC", e);
+        statusEl.textContent = "Failed to load nearby courts. See console for details.";
         alert('Failed to load nearby courts.');
       }
     }
@@ -101,7 +125,7 @@
     // Reverse geocode current coords -> label
     async function reverseGeocode(lat, lon) {
       try {
-        const res = await fetch('/reverse_geocode', {
+        const res = await fetch(`${BASE_URL}/reverse_geocode`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lat, lon })
@@ -141,7 +165,7 @@
       if (!address) return;
 
       try {
-        const res = await fetch('/geocode', {
+        const res = await fetch(`${BASE_URL}/geocode`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ address })
