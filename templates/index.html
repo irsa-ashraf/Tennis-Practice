@@ -5,35 +5,100 @@
   <title>NYC Tennis Courts</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Leaflet CSS for maps -->
+  <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
+
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0f1115;
+      color: #f1f1f1;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #1d2030;
+      background: #0f1115;
+      flex-wrap: wrap;
+    }
+    header h1 {
+      font-size: 18px;
+      margin: 0;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    #controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-left: auto;
+    }
+    button {
+      background: #1f6feb;
+      border: none;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    input[type="text"] {
+      background: #151821;
+      border: 1px solid #2b2f3b;
+      color: #e6e6e6;
+      padding: 10px 12px;
+      border-radius: 10px;
+      width: 280px;
+    }
+    #addrRow, #status {
+      font-size: 12px;
+      opacity: 0.8;
+      padding: 4px 16px 8px 16px;
+    }
+    #status { color: #e6a700; }
+    main {
+      flex: 1;                 /* take remaining height */
+      min-height: 0;           /* allow child to size correctly */
+      display: flex;
+    }
+    #map {
+      flex: 1;
+      /* full height without calc() hacks thanks to flex layout */
+    }
+    a { color: #7aa2ff; }
+  </style>
 </head>
 <body>
 
-  <h1>NYC Tennis Courts</h1>
-  <p>See the nearest tennis courts</p>
+  <header>
+    <h1>NYC Tennis Courts</h1>
+    <div id="controls">
+      <button id="btnLocate">Use my location</button>
+      <input id="address" type="text" placeholder="Enter an address, e.g. 399 Park Avenue, NYC">
+      <button id="btnSearch">Search</button>
+    </div>
+  </header>
 
-  <div id="status" style="font-size:12px; opacity:0.8; margin-top:4px; color:#e6a700;"></div>
+  <div id="status"></div>
+  <div id="addrRow"><span id="addrLabel"></span></div>
 
-  <!-- Controls -->
-  <div>
-    <button id="btnLocate">Use my location</button>
-    <input id="address" type="text" placeholder="Enter an address, e.g. 399 Park Avenue, NYC" style="width:260px;">
-    <button id="btnSearch">Search</button>
-  </div>
-
-  <!-- Resolved address label -->
-  <div style="font-size:12px; opacity:0.8; margin-top:4px;">
-    <span id="addrLabel"></span>
-  </div>
-
-  <!-- Map container -->
-  <div id="map" style="height:400px; margin-top:8px;"></div>
+  <main>
+    <div id="map"></div>
+  </main>
 
   <!-- Leaflet JS -->
   <script
@@ -50,7 +115,7 @@
     const addrLabel = document.getElementById('addrLabel');
 
     // Initialize the map
-    const map = L.map('map').setView([40.7128, -74.0060], 12); // NYC coords
+    const map = L.map('map', { zoomControl: true }).setView([40.7128, -74.0060], 12);
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -196,7 +261,7 @@
       }
     }
 
-    console.log("Map initialized with address label + reverse geocoding + enter-to-search + distance formatting");
+    console.log("Map initialized with header layout + full-height map");
   </script>
 
 </body>
