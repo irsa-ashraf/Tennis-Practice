@@ -1,6 +1,6 @@
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
-from CONSTANTS import GEOCODER_USER_AGENT, GEOCODER_MIN_DELAY_SEC
+from app.CONSTANTS import GEOCODER_USER_AGENT, GEOCODER_MIN_DELAY_SEC
 
 _geolocator = Nominatim(user_agent=GEOCODER_USER_AGENT)
 _forward = RateLimiter(_geolocator.geocode, min_delay_seconds=GEOCODER_MIN_DELAY_SEC)
