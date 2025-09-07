@@ -71,14 +71,11 @@
     }
     #status { color: #e6a700; }
     main {
-      flex: 1;                 /* take remaining height */
-      min-height: 0;           /* allow child to size correctly */
+      flex: 1;
+      min-height: 0;
       display: flex;
     }
-    #map {
-      flex: 1;
-      /* full height without calc() hacks thanks to flex layout */
-    }
+    #map { flex: 1; }
     a { color: #7aa2ff; }
   </style>
 </head>
@@ -122,11 +119,21 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
+    // Custom red icon for "You are here"
+    const redIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
     // User marker
     let userMarker = null;
     function setUserMarker(lat, lon, label = 'You are here') {
       if (userMarker) userMarker.remove();
-      userMarker = L.marker([lat, lon]).addTo(map).bindPopup(label);
+      userMarker = L.marker([lat, lon], { icon: redIcon }).addTo(map).bindPopup(label);
       map.setView([lat, lon], 14);
     }
 
@@ -171,22 +178,18 @@
     async function fetchNearest(lat, lon) {
       const url = `${BASE_URL}/nearest?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=10`;
       try {
-        console.log("[nearest] GET", url);
         const res = await fetch(url);
         const text = await res.text();
         if (!res.ok) {
-          console.error("[nearest] HTTP", res.status, text);
           statusEl.textContent = `Nearest failed: HTTP ${res.status}`;
           throw new Error(`Nearest lookup failed: ${res.status}`);
         }
-        const data = JSON.parse(text); // { count, results: [...] }
-        console.log("[nearest] OK", data);
+        const data = JSON.parse(text);
         statusEl.textContent = "";
         addCourts(data.results || []);
       } catch (e) {
-        console.error("[nearest] EXC", e);
         statusEl.textContent = "Failed to load nearby courts. See console for details.";
-        alert('Failed to load nearby courts.');
+        console.error(e);
       }
     }
 
@@ -199,7 +202,7 @@
           body: JSON.stringify({ lat, lon })
         });
         if (!res.ok) { addrLabel.textContent = ''; return; }
-        const data = await res.json(); // { display_name }
+        const data = await res.json();
         addrLabel.textContent = data.display_name || '';
       } catch {
         addrLabel.textContent = '';
@@ -250,7 +253,7 @@
           alert('Address not found');
           return;
         }
-        const data = await res.json(); // { lat, lon, display_name }
+        const data = await res.json();
         setUserMarker(data.lat, data.lon, data.display_name || 'Selected location');
         if (userMarker) userMarker.openPopup();
         addrLabel.textContent = data.display_name || '';
@@ -261,7 +264,7 @@
       }
     }
 
-    console.log("Map initialized with header layout + full-height map");
+    console.log("Map initialized with red user marker");
   </script>
 
 </body>
