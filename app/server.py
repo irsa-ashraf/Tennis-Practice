@@ -3,8 +3,43 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, RedirectResponse
-
 from .settings import get_settings
+import pandas as pd
+from fastapi import Query, HTTPException
+from .data_prep import load_or_build
+from .nearest import NearestIndex
+from app.pydantic_models import Court, NearestResp
+from typing import List
+
+
+def load_data(data_dir):
+    """
+    Load or build the cleaned courts dataset.
+
+    Inputs:
+        data_dir: (pathlib.Path) directory where raw/clean data files live
+
+    Returns:
+        (pd.DataFrame) cleaned courts dataframe with columns:
+            court_id, name, borough, lat, lon, ...
+    """
+    df = load_or_build(base_dir=str(data_dir))
+    if df is None or df.empty:
+        raise RuntimeError("Failed to load handball courts dataset.")
+    return df
+
+
+def build_index(df):
+    """
+    Build the nearest-neighbor index for courts.
+
+    Inputs:
+        df: (pd.DataFrame) courts dataframe with lat/lon
+
+    Returns:
+        (NearestIndex) spatial index for fast KNN queries
+    """
+    return NearestIndex(df)
 
 
 def create_app():
@@ -17,6 +52,14 @@ def create_app():
     settings = get_settings()
 
     app = FastAPI(title=settings.app_name)
+
+    # Load data + index at startup
+    df: pd.DataFrame = load_data(settings.data_dir)
+    idx: NearestIndex = build_index(df)
+
+    # stash on app.state for reuse in endpoints
+    app.state.df = df
+    app.state.idx = idx
 
     # CORS
     app.add_middleware(
