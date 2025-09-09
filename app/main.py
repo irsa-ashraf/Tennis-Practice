@@ -94,14 +94,24 @@ def nearest(
     limit: int = Query(10, ge=1, le=50),
 ):
     """
-    Returns the K nearest courts to (lat, lon) from the BallTree index.
-    Note: The index is built on a lower-cased copy, so returned columns are lower-case.
-    We map them to your Pydantic model's Title-Case field names.
+    Return the K nearest courts to (lat, lon) using the prebuilt BallTree index.
+
+    Notes:
+        - The index lives on app.state.idx (loaded at startup).
+        - Returned rows have lower-case columns; we map to your Pydantic model's
+          Title-Case fields.
+    Inputs:
+        lat: (float) latitude in degrees
+        lon: (float) longitude in degrees
+        limit: (int) number of results to return (1–50)
+
+    Returns:
+        (NearestResp) count and list of Court objects with distance_km
     """
-    rows = idx.query_k(lat, lon, k=limit)  # rows has: court_id, name, borough, lat, lon, distance_km
+    rows = app.state.idx.query_k(lat, lon, k=limit)
+
     results: List[Court] = []
     for r in rows.itertuples(index=False):
-        # r has attributes like r.court_id, r.name, r.borough, r.lat, r.lon, r.distance_km
         results.append(
             Court(
                 Court_Id=str(getattr(r, "court_id")),
@@ -112,6 +122,7 @@ def nearest(
                 Distance_Km=float(getattr(r, "distance_km")),
             )
         )
+
     return NearestResp(count=len(results), results=results)
 
 
