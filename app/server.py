@@ -3,11 +3,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, RedirectResponse
-from .settings import get_settings
+from app.settings import get_settings
 import pandas as pd
 from fastapi import Query, HTTPException
-from .data_prep import load_or_build
-from .nearest import NearestIndex
+from app.data_prep import load_or_build
+from app.nearest import NearestIndex
 from app.pydantic_models import Court, NearestResp
 from typing import List
 from app.geocode import forward as geocode_forward, reverse as geocode_reverse
@@ -59,6 +59,17 @@ def create_app():
     # Load data + index at startup
     df: pd.DataFrame = load_data(settings.data_dir)
     idx: NearestIndex = build_index(df)
+
+
+    @app.on_event("startup")
+    def startup_event():
+        """
+        Log dataset and index status when the app starts.
+        """
+        court_count = len(app.state.df)
+        print(f"[Startup] Loaded {court_count} courts into memory.")
+        print(f"[Startup] NearestIndex is ready for queries.")
+
 
     # stash on app.state for reuse in endpoints
     app.state.df = df
