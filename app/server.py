@@ -10,6 +10,9 @@ from .data_prep import load_or_build
 from .nearest import NearestIndex
 from app.pydantic_models import Court, NearestResp
 from typing import List
+from app.geocode import forward as geocode_forward, reverse as geocode_reverse
+from app.pydantic_models import GeocodeReq, GeocodeResp, ReverseReq
+
 
 
 def load_data(data_dir):
@@ -100,6 +103,44 @@ def create_app():
             return FileResponse(str(index_path))
         return RedirectResponse(url="/static")
 
+
+    @app.post("/geocode", response_model=GeocodeResp)
+    def geocode(req: GeocodeReq):
+        """
+        Convert a free-form address into latitude/longitude.
+
+        Inputs:
+            req: (GeocodeReq) Pydantic model with field:
+                - address: (str) address or place
+
+        Returns:
+            (GeocodeResp) latitude, longitude, and display name
+        """
+        result = geocode_forward(req.address)
+        if not result:
+            raise HTTPException(status_code=404, detail="Address not found")
+        return GeocodeResp(**result)
+
+    
+    @app.post("/reverse", response_model=GeocodeResp)
+    def reverse(req: ReverseReq):
+        """
+        Convert latitude/longitude into a human-readable address.
+
+        Inputs:
+            req: (ReverseReq) Pydantic model with fields:
+                - lat: (float) latitude
+                - lon: (float) longitude
+
+        Returns:
+            (GeocodeResp) latitude, longitude, and display name
+        """
+        result = geocode_reverse(req.lat, req.lon)
+        if not result:
+            raise HTTPException(status_code=404, detail="Coordinates not found")
+        return GeocodeResp(**result)
+
+    
     return app
 
 
