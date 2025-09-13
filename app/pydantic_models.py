@@ -87,11 +87,13 @@ class Court(BaseModel):
         }
     '''
 
-    Court_Id: str
-    Name: str
+    Court_Id: Optional[str] = None
+    Name: Optional[str] = ""
     Borough: Optional[str] = ""
-    Lat: float
-    Lon: float
+    Lat: Optional[float] = None
+    Lon: Optional[float] = None
+    Num_Of_Courts: Optional[int] = None
+    Location: Optional[str] = ""
     Distance_Km: Optional[float] = None
 
 
