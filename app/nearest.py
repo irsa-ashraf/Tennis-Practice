@@ -4,11 +4,12 @@ from sklearn.neighbors import BallTree
 from typing import Tuple
 from app.CONSTANTS import EARTH_RADIUS_KM
 
+
 class NearestIndex:
     def __init__(self, df: pd.DataFrame):
         # Expect columns: court_id, name, borough, lat, lon
         self.df = df.reset_index(drop=True).copy()
-        coords = self.df[["lat", "lon"]].to_numpy(dtype=float)
+        coords = self.df[["Lat", "Lon"]].to_numpy(dtype=float)
         self.coords_rad = np.radians(coords)               # (N,2) in radians
         self.tree = BallTree(self.coords_rad, metric="haversine")
 
