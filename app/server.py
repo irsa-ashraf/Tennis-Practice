@@ -10,7 +10,7 @@ from app.data_prep import load_or_build
 from app.nearest import NearestIndex
 from app.pydantic_models import Court, NearestResp
 from typing import List
-from app.geocode import forward as geocode_forward, reverse as geocode_reverse
+from app.geocode import geocode_forward, geocode_reverse
 from app.pydantic_models import GeocodeReq, GeocodeResp, ReverseReq
 
 
@@ -26,7 +26,8 @@ def load_data(data_dir):
         (pd.DataFrame) cleaned courts dataframe with columns:
             court_id, name, borough, lat, lon, ...
     """
-    df = load_or_build(base_dir=str(data_dir))
+
+    df = load_or_build()
     if df is None or df.empty:
         raise RuntimeError("Failed to load handball courts dataset.")
     return df
@@ -86,9 +87,9 @@ def create_app():
 
     # Static files (serves /static/*)
     app.mount(
-        "/static",
-        StaticFiles(directory=str(settings.static_dir), html=True),
-        name="static",
+        "/templates",
+        StaticFiles(directory="templates", html=True),
+        name="templates",
     )
 
     @app.get("/health")
@@ -100,6 +101,7 @@ def create_app():
             (dict) service status and metadata
         """
         return {"status": "ok", "app": settings.app_name, "debug": settings.debug}
+
 
     @app.get("/")
     def root():
@@ -115,8 +117,8 @@ def create_app():
         return RedirectResponse(url="/static")
 
 
-    @app.post("/geocode", response_model=GeocodeResp)
-    def geocode(req: GeocodeReq):
+    @app.post("/geocodeForward", response_model=GeocodeResp)
+    def forward(req: GeocodeReq):
         """
         Convert a free-form address into latitude/longitude.
 
@@ -127,13 +129,14 @@ def create_app():
         Returns:
             (GeocodeResp) latitude, longitude, and display name
         """
+
         result = geocode_forward(req.address)
         if not result:
             raise HTTPException(status_code=404, detail="Address not found")
         return GeocodeResp(**result)
 
     
-    @app.post("/reverse", response_model=GeocodeResp)
+    @app.post("/geocodeReverse", response_model=GeocodeResp)
     def reverse(req: ReverseReq):
         """
         Convert latitude/longitude into a human-readable address.
@@ -150,8 +153,37 @@ def create_app():
         if not result:
             raise HTTPException(status_code=404, detail="Coordinates not found")
         return GeocodeResp(**result)
-
     
+
+    @app.get("/nearest", response_model=NearestResp)
+    def nearest(
+        lat: float = Query(..., ge=-90, le=90),
+        lon: float = Query(..., ge=-180, le=180),
+        limit: int = Query(10, ge=1, le=50),
+    ):
+        
+        nearest_courts_df = idx.query_k(lat, lon, k=limit)
+
+        # If court_id is in the index, make it a column named 'court_id'
+        if "Court_Id" not in nearest_courts_df.columns:
+            nearest_courts_df = nearest_courts_df.reset_index().rename(columns={"index": "Court_Id"})
+        results = []
+        for _, row in nearest_courts_df.iterrows():
+            court = Court(
+                        Court_Id=str(row["Court_Id"]),
+                        Name=str(row["Name"]),
+                        Borough=str(row.get("Borough", "")),
+                        Lat=float(row["Lat"]),
+                        Lon=float(row["Lon"]),
+                        Num_Of_Courts = int(row["Num_Of_Courts"]),
+                        Location = str(row["Location"]),
+                        Distance_Km=float(row.get("distance_km", 0.0))
+                    )
+            results.append(court)
+
+        return NearestResp(count=len(results), results=results)
+
+ 
     return app
 
 
