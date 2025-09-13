@@ -163,7 +163,7 @@
             <b>${name}</b><br>
             ${borough ? `${borough}<br>` : ""}
             ${dist ? `${dist}<br>` : ""}
-            <a href="/courts/${id}" target="_blank">Details</a>
+            ${c.Num_Of_Courts ? `Number of Courts: ${c.Num_Of_Courts}<br>` : ""}
           </div>`;
         const m = L.marker([lat, lon]).addTo(map).bindPopup(html);
         courtMarkers.push(m);
