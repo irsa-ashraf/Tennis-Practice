@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual envs
+.env
+venv/
+.venv/
+
+# Build artifacts / logs
+*.db
+*.log
+
+# Git
+.git
+.gitignore
+
+# OS
+.DS_Store
