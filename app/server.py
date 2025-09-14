@@ -57,6 +57,13 @@ def create_app():
 
     app = FastAPI(title=settings.app_name)
 
+    app.mount("/templates", StaticFiles(directory="templates", html=True), name="templates")
+
+    # Serve index.html at the root URL
+    @app.get("/", include_in_schema=False)
+    def home():
+        return FileResponse("templates/index.html")
+
     # Load data + index at startup
     df: pd.DataFrame = load_data(settings.data_dir)
     idx: NearestIndex = build_index(df)
