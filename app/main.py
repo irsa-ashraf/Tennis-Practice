@@ -35,7 +35,7 @@ except ImportError:
 app = FastAPI(title="NYC Tennis Courts", version="1.0.0")
 
 # ---- Load data and build nearest index ----
-# Your cleaned CSV has Title-Case columns (Court_Id, Name, Borough, Lat, Lon, …).
+# CSV has Title-Case columns (Court_Id, Name, Borough, Lat, Lon, …).
 df: pd.DataFrame = load_or_build()
 
 # Build an index on a LOWER-CASED copy so NearestIndex (which expects 'lat','lon') works.
@@ -66,13 +66,13 @@ def health_check():
 
 @app.get("/", include_in_schema=False)
 def root():
-    # Serve your uploaded index.html. Keep it in repo root next to run_server.py.
+    # Serve uploaded index.html. Keep it in repo root next to run_server.py.
     return FileResponse(_index_html_path())
 
 
 @app.get("/courts/{court_id}", response_model=Court)
 def get_court(court_id: str):
-    # Your DataFrame columns are Title-Case (Court_Id, Name, Borough, Lat, Lon, …)
+    # DataFrame columns are Title-Case (Court_Id, Name, Borough, Lat, Lon, …)
     row = df[df["Court_Id"] == court_id]
     if row.empty:
         raise HTTPException(404, detail="Court not found")
