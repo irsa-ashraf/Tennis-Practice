@@ -19,3 +19,4 @@ scipy==1.14.1
 joblib==1.5.1
 threadpoolctl==3.6.0
 six==1.17.0
+openai==1.109.1
