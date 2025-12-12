@@ -282,14 +282,14 @@
     let previous_response_id = null;
 
     async function askAgent() {
-      const userText = document.getElementById("userInput").value;
+      const query = document.getElementById("userInput").value;
 
       const res = await fetch("/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_text: userText,
-          previous_response_id: previous_response_id
+          query: query,
+          // previous_response_id: previous_response_id
         })
       });
 
@@ -298,7 +298,7 @@
       previous_response_id = data.response_id;
 
       const chatDiv = document.getElementById("chat");
-      chatDiv.innerHTML += `<p><strong>You:</strong> ${userText}</p>`;
+      chatDiv.innerHTML += `<p><strong>You:</strong> ${query}</p>`;
       chatDiv.innerHTML += `<p><strong>Agent:</strong> ${data.text}</p>`;
     }
   </script>
