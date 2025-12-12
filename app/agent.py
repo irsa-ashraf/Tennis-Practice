@@ -4,23 +4,30 @@ AI Agent for Tennis Courts Application
 
 
 from openai import OpenAI
-from app.main import app
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import os
 from app.pydantic_models import AgentRequest
-from fastapi import FastAPI
 
-
-app = FastAPI()
+router = APIRouter()
 client = OpenAI(api_key=os.environ["NYCPLACES_OPENAI_API_KEY"])
 
 
-@app.post("/agent")
+@router.get("/agent_health")
+def health_check():
+    return {"status": "ok"}
+
+
+@router.post("/agent")
 async def agent(request: AgentRequest):
     '''
     FastAPI endpoint that calls the Agent 
     '''
+
+    api_key = os.getenv("NYCPLACES_OPENAI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Missing NYCPLACES_OPENAI_API_KEY")
+    client = OpenAI(api_key=api_key)
 
     try:
         response = client.responses.create(model="gpt-5-nano", 

@@ -9,6 +9,7 @@ import os
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
+from app.agent import router as agent_router
 
 # ---- Imports (works whether running as a package "app.*" or flat files) ----
 try:
@@ -33,6 +34,7 @@ except ImportError:
 
 
 app = FastAPI(title="NYC Tennis Courts", version="1.0.0")
+app.include_router(agent_router)
 
 # ---- Load data and build nearest index ----
 # CSV has Title-Case columns (Court_Id, Name, Borough, Lat, Lon, …).

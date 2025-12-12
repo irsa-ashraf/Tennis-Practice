@@ -12,6 +12,7 @@ from app.pydantic_models import Court, NearestResp
 from typing import List
 from app.geocode import geocode_forward, geocode_reverse
 from app.pydantic_models import GeocodeReq, GeocodeResp, ReverseReq
+from app.agent import router as agent_router
 
 
 
@@ -56,7 +57,7 @@ def create_app():
     settings = get_settings()
 
     app = FastAPI(title=settings.app_name)
-
+    app.include_router(agent_router)
     app.mount("/templates", StaticFiles(directory="templates", html=True), name="templates")
 
     # Serve index.html at the root URL
