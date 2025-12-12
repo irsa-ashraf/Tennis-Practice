@@ -104,6 +104,19 @@
     crossorigin=""
   ></script>
 
+  <h1>Ask the Handball Courts Agent</h1>
+
+  <input
+    id="userInput"
+    type="text"
+    placeholder="Ask me about handball courts..."
+    style="width: 300px;"
+  />
+
+  <button onclick="askAgent()">Ask</button>
+
+  <div id="chat"></div>
+
   <script>
     // Always talk to the FastAPI backend on port 8000
     const API_BASE = "http://127.0.0.1:8000";
@@ -264,6 +277,29 @@
         console.error(e);
         alert('Geocoding request failed.');
       }
+    }
+
+    let previous_response_id = null;
+
+    async function askAgent() {
+      const userText = document.getElementById("userInput").value;
+
+      const res = await fetch("/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_text: userText,
+          previous_response_id: previous_response_id
+        })
+      });
+
+      const data = await res.json();
+
+      previous_response_id = data.response_id;
+
+      const chatDiv = document.getElementById("chat");
+      chatDiv.innerHTML += `<p><strong>You:</strong> ${userText}</p>`;
+      chatDiv.innerHTML += `<p><strong>Agent:</strong> ${data.text}</p>`;
     }
   </script>
 
