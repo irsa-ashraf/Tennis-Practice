@@ -131,3 +131,21 @@ class NearestResp(BaseModel):
     
     count: int
     results: List[Court]
+
+
+class AgentRequest(BaseModel):
+    '''
+    Request model for AI agent queries.
+
+    Attributes:
+        query (str): The user's query for the AI agent.
+
+    Example:
+        {
+            "query": "Find the best tennis courts in Brooklyn."
+        }
+    '''
+
+    query: Optional[str] = Field(..., min_length=2)
+
+
