@@ -294,8 +294,9 @@
       });
 
       const data = await res.json();
-
-      previous_response_id = data.response_id;
+      console.log("Agent response JSON:", data);
+      agentTextEl.innerText = data.response;
+      // previous_response_id = data.response_id;
 
       const chatDiv = document.getElementById("chat");
       chatDiv.innerHTML += `<p><strong>You:</strong> ${query}</p>`;
