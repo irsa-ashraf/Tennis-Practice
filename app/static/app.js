@@ -1,5 +1,6 @@
 // Always talk to the FastAPI backend on port 8000
-const API_BASE = "http://127.0.0.1:8000";
+// const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "";
 console.log("Loaded app.js at", new Date().toISOString());
 
 const statusEl = document.getElementById("status");
