@@ -1,5 +1,3 @@
-// If you deploy behind the same domain, keep API_BASE = "".
-// If local dev (separate frontend), set API_BASE = "http://127.0.0.1:8000";
 const API_BASE = "";
 
 const statusEl = document.getElementById("status");
@@ -36,10 +34,9 @@ function setLoading(isLoading) {
   setAgentStatus(isLoading ? "Thinking…" : "Ready");
 }
 
-// Initialize the map
+// Initialize map
 const map = L.map("map", { zoomControl: true }).setView([40.7128, -74.0060], 12);
 
-// Add OpenStreetMap tiles
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: "&copy; OpenStreetMap contributors",
 }).addTo(map);
@@ -123,7 +120,7 @@ async function fetchNearest(lat, lon) {
   }
 }
 
-// Reverse geocode current coords -> label
+// Reverse geocode
 async function reverseGeocode(lat, lon) {
   try {
     const res = await fetch(`${API_BASE}/geocodeReverse`, {
@@ -165,7 +162,7 @@ document.getElementById("btnLocate").addEventListener("click", () => {
   );
 });
 
-// Address search (click + Enter)
+// Address search
 document.getElementById("btnSearch").addEventListener("click", onSearch);
 document.getElementById("address").addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
@@ -188,14 +185,11 @@ async function geocodeForwardWithRetry(address, attempts = 2) {
 
       if (res.ok) return await res.json();
 
-      // 404 can be “real”, but Nominatim can also temporarily fail.
-      // We'll retry once after a short backoff.
       lastErr = new Error(`HTTP ${res.status}`);
     } catch (e) {
       lastErr = e;
     }
 
-    // backoff
     await new Promise((r) => setTimeout(r, 400 + i * 600));
   }
 
@@ -235,7 +229,6 @@ async function askAgent() {
 
   setLoading(true);
 
-  // Optional: show a temporary "typing…" bubble
   const typingId = `typing-${Date.now()}`;
   const typingRow = document.createElement("div");
   typingRow.className = "msgRow bot";
@@ -256,7 +249,6 @@ async function askAgent() {
 
     const data = await res.json();
 
-    // remove typing bubble
     const t = document.getElementById(typingId);
     if (t) t.remove();
 
