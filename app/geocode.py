@@ -27,8 +27,6 @@ def _normalize_address(address: str) -> str:
         return a
 
     lower = a.lower()
-    # If user didn't specify NYC-ish context, add it.
-    # This improves hit rate and reduces ambiguous matches.
     if ("new york" not in lower) and ("ny" not in lower) and ("nyc" not in lower):
         a = f"{a}, New York, NY"
     return a
@@ -41,10 +39,8 @@ def geocode_forward(address: str):
             return None
         return {"lat": loc.latitude, "lon": loc.longitude, "display_name": loc.address}
     except (GeocoderTimedOut, GeocoderUnavailable):
-        # temporary problems
         return None
     except Exception:
-        # keep it safe: treat unknown errors as "no result"
         return None
 
 def geocode_reverse(lat: float, lon: float):

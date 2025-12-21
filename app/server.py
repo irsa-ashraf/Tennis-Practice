@@ -36,7 +36,6 @@ def create_app():
     app.state.df = df
     app.state.idx = idx
 
-    # CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.allowed_origins,
