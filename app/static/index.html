@@ -2,136 +2,296 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>NYC Tennis Courts</title>
+  <title>NYC Handball Courts</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
+    :root{
+      --bg:#0b0d12;
+      --panel:#0f1119;
+      --card:#131728;
+      --muted:#8b93a7;
+      --text:#eef2ff;
+      --border:#1e2336;
+      --accent:#4f7cff;
+      --accent2:#22c55e;
+      --warn:#f59e0b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
     }
 
+    html, body { height: 100%; margin: 0; }
     body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: #0f1115;
-      color: #f1f1f1;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(79,124,255,.25), transparent 50%),
+                  radial-gradient(900px 600px at 90% 0%, rgba(34,197,94,.18), transparent 55%),
+                  var(--bg);
+      color: var(--text);
       display: flex;
       flex-direction: column;
     }
 
-    header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border-bottom: 1px solid #1d2030;
-      background: #0f1115;
-      flex-wrap: wrap;
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      background: rgba(15,17,25,.85);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    header h1 {
-      font-size: 18px;
-      margin: 0;
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 220px;
+    }
+    .brand h1{
+      font-size:16px;
+      margin:0;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .brand .sub{
+      font-size:12px;
+      color: var(--muted);
+    }
+
+    #controls{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    button{
+      background: linear-gradient(180deg, rgba(79,124,255,1), rgba(79,124,255,.85));
+      border: 1px solid rgba(255,255,255,.08);
+      color:white;
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      box-shadow: 0 6px 20px rgba(79,124,255,.18);
+      transition: transform .05s ease, opacity .15s ease;
       font-weight: 600;
     }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
 
-    #controls {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-left: auto;
+    .ghost{
+      background: transparent;
+      box-shadow:none;
+      border:1px solid var(--border);
+      color: var(--text);
     }
 
-    button {
-      background: #1f6feb;
-      border: none;
-      color: white;
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
+    input[type="text"]{
+      background: rgba(19,23,40,.85);
+      border:1px solid var(--border);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      width: min(380px, 70vw);
+      outline:none;
+    }
+    input[type="text"]::placeholder{ color: rgba(139,147,167,.8); }
+
+    #status{
+      font-size:12px;
+      padding:8px 16px;
+      color: var(--warn);
+      min-height: 18px;
     }
 
-    input[type="text"] {
-      background: #151821;
-      border: 1px solid #2b2f3b;
-      color: #e6e6e6;
-      padding: 10px 12px;
-      border-radius: 10px;
-      width: 280px;
+    main{ flex:1; padding: 0 16px 14px 16px; }
+    #map{
+      width:100%;
+      height: 66vh;
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      background: #0d1020;
     }
 
-    #status {
+    .bottom{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px;
+      padding: 0 16px 16px 16px;
+    }
+
+    @media (max-width: 980px){
+      .bottom{ grid-template-columns: 1fr; }
+      #map{ height: 58vh; }
+    }
+
+    .panel{
+      border:1px solid var(--border);
+      background: rgba(15,17,25,.8);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .panelHead{
+      padding: 12px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+
+    .panelHead h2{
+      margin:0;
+      font-size: 14px;
+      letter-spacing: .2px;
+    }
+
+    .pill{
       font-size: 12px;
-      padding: 6px 16px;
-      color: #e6a700;
+      color: var(--muted);
     }
 
-    main {
+    /* Chat */
+    #chatArea{
+      display:flex;
+      flex-direction:column;
+      height: 360px;
+    }
+
+    #chatLog{
+      padding: 14px;
+      overflow:auto;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      background: rgba(11,13,18,.35);
+    }
+
+    .msgRow{ display:flex; }
+    .msg{
+      max-width: 82%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      line-height: 1.35;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .me{ justify-content:flex-end; }
+    .me .msg{
+      background: rgba(79,124,255,.18);
+      border-color: rgba(79,124,255,.25);
+    }
+    .bot{ justify-content:flex-start; }
+    .bot .msg{
+      background: rgba(34,197,94,.12);
+      border-color: rgba(34,197,94,.22);
+    }
+
+    .meta{
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .chatInput{
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      background: rgba(15,17,25,.9);
+    }
+
+    .chatInput input{
       flex: 1;
+      width: auto;
     }
 
-    /* 🔥 THIS IS THE CRITICAL FIX 🔥 */
-    #map {
-      width: 100%;
-      height: 70vh;
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      padding: 10px 14px 0 14px;
     }
 
-    #agentWrap {
-      border-top: 1px solid #1d2030;
-      padding: 12px 16px;
-    }
-
-    #chat p {
-      margin: 6px 0;
+    /* Right panel helper */
+    #addrLabel{
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 14px 12px 14px;
     }
   </style>
 </head>
 
 <body>
+  <header>
+    <div class="brand">
+      <h1>NYC Handball Courts Finder</h1>
+      <div class="sub">Map + nearest courts + AI assistant</div>
+    </div>
 
-<header>
-  <h1>NYC Tennis Courts</h1>
-  <div id="controls">
-    <button id="btnLocate">Use my location</button>
-    <input id="address" type="text" placeholder="Enter an address, e.g. 399 Park Avenue, NYC">
-    <button id="btnSearch">Search</button>
+    <div id="controls">
+      <button id="btnLocate">Use my location</button>
+      <input id="address" type="text" placeholder="Enter an address, e.g. 399 Park Ave, NYC">
+      <button id="btnSearch" class="ghost">Search</button>
+    </div>
+  </header>
+
+  <div id="status"></div>
+
+  <main>
+    <div id="map"></div>
+  </main>
+
+  <div class="bottom">
+    <div class="panel">
+      <div class="panelHead">
+        <h2>AI Assistant</h2>
+        <div class="pill" id="agentStatus">Ready</div>
+      </div>
+
+      <div class="hint">Try: “How many handball courts are in Manhattan?” or “What’s the closest court to Williamsburg?”</div>
+
+      <div id="chatArea">
+        <div id="chatLog"></div>
+
+        <div class="chatInput">
+          <input id="userInput" type="text" placeholder="Ask me about handball courts..." />
+          <button id="btnAskAgent">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panelHead">
+        <h2>Selected location</h2>
+        <div class="pill">Used for nearest search</div>
+      </div>
+      <div id="addrLabel"></div>
+      <div style="padding: 0 14px 14px 14px; color: var(--muted); font-size: 12px;">
+        Tip: click a marker to see court details.
+      </div>
+    </div>
   </div>
-</header>
 
-<div id="status"></div>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<main>
-  <div id="map"></div>
-</main>
-
-<div id="agentWrap">
-  <h2>Ask the Handball Courts Agent</h2>
-
-  <input
-    id="userInput"
-    type="text"
-    placeholder="Ask me about handball courts..."
-  />
-
-  <button id="btnAskAgent">Ask</button>
-
-  <div id="agentText"></div>
-  <div id="chat"></div>
-</div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="/static/app.js" defer></script>
-
-
-<!-- Your separated JS -->
-<script src="./app.js" defer></script>
-
+  <!-- IMPORTANT: only load ONE app.js -->
+  <script src="/static/app.js" defer></script>
 </body>
 </html>

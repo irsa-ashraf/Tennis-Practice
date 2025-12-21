@@ -1,11 +1,40 @@
-// Always talk to the FastAPI backend on port 8000
-// const API_BASE = "http://127.0.0.1:8000";
+// If you deploy behind the same domain, keep API_BASE = "".
+// If local dev (separate frontend), set API_BASE = "http://127.0.0.1:8000";
 const API_BASE = "";
-console.log("Loaded app.js at", new Date().toISOString());
 
 const statusEl = document.getElementById("status");
 const addrLabel = document.getElementById("addrLabel");
-const agentTextEl = document.getElementById("agentText");
+
+// Chat UI
+const chatLog = document.getElementById("chatLog");
+const inputEl = document.getElementById("userInput");
+const sendBtn = document.getElementById("btnAskAgent");
+const agentStatus = document.getElementById("agentStatus");
+
+function setAgentStatus(text) {
+  if (agentStatus) agentStatus.textContent = text;
+}
+
+function appendMessage(role, text) {
+  const row = document.createElement("div");
+  row.className = `msgRow ${role === "me" ? "me" : "bot"}`;
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg";
+  bubble.textContent = text;
+
+  row.appendChild(bubble);
+  chatLog.appendChild(row);
+
+  // scroll to bottom
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function setLoading(isLoading) {
+  sendBtn.disabled = isLoading;
+  inputEl.disabled = isLoading;
+  setAgentStatus(isLoading ? "Thinking…" : "Ready");
+}
 
 // Initialize the map
 const map = L.map("map", { zoomControl: true }).setView([40.7128, -74.0060], 12);
@@ -40,6 +69,7 @@ function clearCourts() {
   courtMarkers.forEach((m) => m.remove());
   courtMarkers = [];
 }
+
 function addCourts(list) {
   clearCourts();
   const bounds = [];
@@ -82,7 +112,7 @@ async function fetchNearest(lat, lon) {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
       statusEl.textContent = `Nearest failed: HTTP ${res.status}`;
-      throw new Error(`Nearest lookup failed: ${res.status}`);
+      return;
     }
     const data = await res.json();
     statusEl.textContent = "";
@@ -144,61 +174,114 @@ document.getElementById("address").addEventListener("keydown", (e) => {
   }
 });
 
+async function geocodeForwardWithRetry(address, attempts = 2) {
+  let lastErr = null;
+
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(`${API_BASE}/geocodeForward`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address }),
+        cache: "no-store",
+      });
+
+      if (res.ok) return await res.json();
+
+      // 404 can be “real”, but Nominatim can also temporarily fail.
+      // We'll retry once after a short backoff.
+      lastErr = new Error(`HTTP ${res.status}`);
+    } catch (e) {
+      lastErr = e;
+    }
+
+    // backoff
+    await new Promise((r) => setTimeout(r, 400 + i * 600));
+  }
+
+  throw lastErr || new Error("Geocode failed");
+}
+
 async function onSearch() {
   const address = document.getElementById("address").value.trim();
   if (!address) return;
 
+  statusEl.textContent = "Searching address…";
+
   try {
-    const res = await fetch(`${API_BASE}/geocodeForward`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address }),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      alert("Address not found");
-      return;
-    }
-    const data = await res.json();
+    const data = await geocodeForwardWithRetry(address, 2);
+
     setUserMarker(data.lat, data.lon, data.display_name || "Selected location");
     if (userMarker) userMarker.openPopup();
+
     addrLabel.textContent = data.display_name || "";
+    statusEl.textContent = "";
     fetchNearest(data.lat, data.lon);
   } catch (e) {
     console.error(e);
-    alert("Geocoding request failed.");
+    statusEl.textContent = "";
+    alert("Address not found (or geocoder temporarily busy). Try again in a moment.");
   }
 }
 
 // -------------------- Agent --------------------
 
-let previous_response_id = null;
-
 async function askAgent() {
-  const query = document.getElementById("userInput").value;
+  const query = (inputEl.value || "").trim();
+  if (!query) return;
 
-  const res = await fetch("/agent", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: query,
-      // previous_response_id: previous_response_id
-    }),
-  });
+  appendMessage("me", query);
+  inputEl.value = "";
 
-  const data = await res.json();
-  console.log("Agent response JSON:", data);
+  setLoading(true);
 
-  // show a one-liner "latest agent answer"
-  const answerText = data.text ?? data.response ?? "";
-  agentTextEl.innerText = answerText;
+  // Optional: show a temporary "typing…" bubble
+  const typingId = `typing-${Date.now()}`;
+  const typingRow = document.createElement("div");
+  typingRow.className = "msgRow bot";
+  typingRow.id = typingId;
+  const typingBubble = document.createElement("div");
+  typingBubble.className = "msg";
+  typingBubble.textContent = "…";
+  typingRow.appendChild(typingBubble);
+  chatLog.appendChild(typingRow);
+  chatLog.scrollTop = chatLog.scrollHeight;
 
-  // previous_response_id = data.response_id;
+  try {
+    const res = await fetch(`${API_BASE}/agent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query }),
+    });
 
-  const chatDiv = document.getElementById("chat");
-  chatDiv.innerHTML += `<p><strong>You:</strong> ${query}</p>`;
-  chatDiv.innerHTML += `<p><strong>Agent:</strong> ${answerText}</p>`;
+    const data = await res.json();
+
+    // remove typing bubble
+    const t = document.getElementById(typingId);
+    if (t) t.remove();
+
+    if (!res.ok) {
+      const msg = data?.detail || data?.error || `Agent error: HTTP ${res.status}`;
+      appendMessage("bot", String(msg));
+      return;
+    }
+
+    const answerText = data.text ?? data.response ?? "";
+    appendMessage("bot", answerText || "(No response)");
+  } catch (e) {
+    const t = document.getElementById(typingId);
+    if (t) t.remove();
+    console.error(e);
+    appendMessage("bot", "Sorry — the agent request failed. Check your server logs.");
+  } finally {
+    setLoading(false);
+  }
 }
 
-// Hook up the button (instead of inline onclick)
-document.getElementById("btnAskAgent").addEventListener("click", askAgent);
+sendBtn.addEventListener("click", askAgent);
+inputEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    askAgent();
+  }
+});
