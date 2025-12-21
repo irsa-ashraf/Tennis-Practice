@@ -11,10 +11,9 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from app.agent import router as agent_router
 
-# ---- Imports (works whether running as a package "app.*" or flat files) ----
 try:
     from app.data_prep import load_or_build
-except ImportError:  # fallback if not running as a package
+except ImportError:
     from data_prep import load_or_build
 
 try:
@@ -36,16 +35,13 @@ except ImportError:
 app = FastAPI(title="NYC Tennis Courts", version="1.0.0")
 app.include_router(agent_router)
 
-# ---- Load data and build nearest index ----
-# CSV has Title-Case columns (Court_Id, Name, Borough, Lat, Lon, …).
+# Load data and build nearest index
 df: pd.DataFrame = load_or_build()
 
-# Build an index on a LOWER-CASED copy so NearestIndex (which expects 'lat','lon') works.
 _df_for_index = df.rename(columns={c: c.lower() for c in df.columns})
 idx = NearestIndex(_df_for_index)
 
-
-# ---- Helpers ----
+# Helpers
 def _index_html_path() -> str:
     """
     Try to serve ./index.html (repo root). If not found, fall back to ./templates/index.html.
@@ -56,11 +52,10 @@ def _index_html_path() -> str:
     candidate2 = os.path.join(os.getcwd(), "templates", "index.html")
     if os.path.exists(candidate2):
         return candidate2
-    # Final fallback: 404 via FileResponse will raise, but we can at least point to expected file.
     return candidate1
 
 
-# ---- Endpoints ----
+# Endpoints
 @app.get("/health_check")
 def health_check():
     return {"status": "ok"}
@@ -68,13 +63,11 @@ def health_check():
 
 @app.get("/", include_in_schema=False)
 def root():
-    # Serve uploaded index.html. Keep it in repo root next to run_server.py.
     return FileResponse(_index_html_path())
 
 
 @app.get("/courts/{court_id}", response_model=Court)
 def get_court(court_id: str):
-    # DataFrame columns are Title-Case (Court_Id, Name, Borough, Lat, Lon, …)
     row = df[df["Court_Id"] == court_id]
     if row.empty:
         raise HTTPException(404, detail="Court not found")
@@ -85,7 +78,7 @@ def get_court(court_id: str):
         Borough=str(r.get("Borough", "")),
         Lat=float(r["Lat"]),
         Lon=float(r["Lon"]),
-        Distance_Km=None,  # not applicable here
+        Distance_Km=None,
     )
 
 
