@@ -3,6 +3,7 @@
 A production-ready web application that helps users discover nearby public tennis courts in New York City using geospatial search and natural-language queries powered by an AI agent.
 
 **Live Demo:** https://nyc-places.onrender.com
+
 **Tech Stack:** FastAPI · Python · OpenAI Responses API · Docker · Pandas · Folium · Leaflet
 
 ---
@@ -42,13 +43,14 @@ The app is containerized and deployed, making it a realistic production example
 ## Architecture
 
 app/
-├── server.py # FastAPI app & API routes
-├── agent.py # AI agent logic (Responses API)
-├── data_prep.py # Data loading & preprocessing
-├── nearest.py # Distance calculations & nearest-neighbor logic
+├── server.py          # FastAPI app & API routes
+├── agent.py           # AI agent logic (Responses API)
+├── data_prep.py       # Data loading & preprocessing
+├── nearest.py         # Distance calculations & nearest-neighbor logic
 ├── pydantic_models.py # Typed request/response models
-├── static/ # Frontend assets (HTML / CSS / JS)
-└── settings.py # Environment-based configuration
+├── static/            # Frontend assets (HTML / CSS / JS)
+└── settings.py        # Environment-based configuration
+
 
 ---
 
