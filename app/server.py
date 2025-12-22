@@ -52,14 +52,14 @@ def create_app():
     def forward(req: GeocodeReq):
         result = geocode_forward(req.address)
         if not result:
-            raise HTTPException(status_code=404, detail="Address not found")
+            raise HTTPException(status_code=503, detail="Geocoding service unavailable")
         return GeocodeResp(**result)
 
     @app.post("/geocodeReverse", response_model=GeocodeResp)
     def reverse(req: ReverseReq):
         result = geocode_reverse(req.lat, req.lon)
         if not result:
-            raise HTTPException(status_code=404, detail="Coordinates not found")
+            raise HTTPException(status_code=503, detail="Geocoding service unavailable")
         return GeocodeResp(**result)
 
     @app.get("/nearest", response_model=NearestResp)
