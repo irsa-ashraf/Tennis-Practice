@@ -114,8 +114,9 @@
 
     main{ flex:1; padding: 0 16px 22px 16px; }
     #map{
-      width:100%;
-      height: 66vh;
+      width: 100%;
+      height: 75vh;
+      min-height: 520px;
       border:1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
@@ -126,12 +127,12 @@
     .bottom{
       display: flex;
       justify-content: center;
-      padding: 0 16px 24px 16px;
+      padding: 8px 16px 24px 16px;
     }
 
     @media (max-width: 980px){
       .bottom{ grid-template-columns: 1fr; }
-      #map{ height: 58vh; }
+      #map{ height: 62vh; }
     }
 
     .panel{
@@ -166,11 +167,11 @@
     #chatArea{
       display:flex;
       flex-direction:column;
-      height: 200px;
+      height: 150px;
     }
 
     #chatLog{
-      padding: 14px;
+      padding: 10px;
       overflow:auto;
       flex:1;
       display:flex;
@@ -208,7 +209,7 @@
     }
 
     .chatInput{
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-top: 1px solid var(--border);
       display:flex;
       gap: 10px;
@@ -223,7 +224,8 @@
 
     .chatPanel{
       width: 100%;
-      max-width: 760px;
+      max-width: 560px;
+      margin: 0 auto;
     }
 
 
