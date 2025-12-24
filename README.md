@@ -17,8 +17,6 @@ Users can:
   - “Which courts are closest to Central Park?”
 - Interact with an AI agent that reasons over **real application data**
 
-The app is containerized and deployed, making it a realistic production example
-
 ---
 
 ## Key Features
