@@ -1,6 +1,6 @@
 # 🎾 AI-Powered NYC Tennis Courts Finder
 
-A production-ready web application that helps users discover nearby public tennis courts in New York City using geospatial search and natural-language queries powered by an AI agent.
+A production-ready web application that helps users discover nearby public tennis courts in New York City using geospatial search and natural-language queries powered by an AI chat agent.
 
 **Live Demo:** https://nyc-places.onrender.com
 
@@ -15,7 +15,7 @@ Users can:
 - Ask **natural-language questions** such as:
   - “How many tennis courts are there in NYC?”
   - “Which courts are closest to Central Park?”
-- Interact with an AI agent that reasons over **real application data**
+- Interact with an AI chat agent that reasons over **real application data**
 
 ---
 
@@ -26,7 +26,7 @@ Users can:
 - Real-time distance calculations between users and tennis courts
 - Returns nearest courts with metadata and map visualization
 
-### AI Agent (OpenAI Responses API)
+### Chat Bot (OpenAI Responses API)
 - Uses OpenAI’s **Responses API**
 - Handles free-form user questions about tennis courts
 - Grounds responses in the project’s CSV dataset (no hallucinations)
@@ -52,7 +52,7 @@ app/
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-----|-----------|
@@ -72,7 +72,7 @@ app/
 “Which courts are closest to me?”
 “Show me courts near Brooklyn Heights”
 
-The AI agent dynamically queries and reasons over the dataset before responding.
+The chat agent dynamically queries and reasons over the dataset before responding.
 
 ---
 
