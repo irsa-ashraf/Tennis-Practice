@@ -1,0 +1,57 @@
+Court_Id,Name,Borough,Location,Num_Of_Courts,Indoor_Outdoor,Tennis_Type,Accessible,Info,Lat,Lon
+X010,Cary Leeds Tennis Center at Crotona Park,Bronx,E. 173d St. and Crotona Ave.,22,Indoor,Hard,Y,"Lessons are offered. During the indoor season (The day after Columbus Day &ndash; April 27), there are 10 outdoor courts available, and 10 courts are bubbled and can be rented for a fee. During the outdoor season, there are 15 courts available to Parks tennis permit holders. For booking courts and program information please call or visit <a href=""http://www.nyjtl.org/caryleeds/"">Cary Leeds Tennis Center's</a> website for more information.",40.8394,-73.8951
+X196,Haffen Park,Bronx,"Hammersley, Ely, and Gunther Aves.",6,Outdoor,Hard,Y,,40.874,-73.84
+X201,Seton Park,Bronx,"W. 232nd to 235th St., Palisade and Independence Aves.",6,Outdoor,Hard,N,Lessons Offered,40.8853,-73.9164
+X044,St. James Park,Bronx,Jerome Ave. and E. 193d St.,4,Outdoor,Hard,Y,,40.8656,-73.8972
+X104,Williamsbridge Oval,Bronx,E. 208th St. and Bainbridge Ave.,8,Outdoor,Hard,N,,40.8782,-73.8777
+B215,Decatur Playground,Brooklyn,Decatur bet. Summer and Lewis Aves.,1,Outdoor,Hard,N,,40.6814,-73.9363
+B028,Lucille Ferrier Tennis Courts (Dyker Beach Park),Brooklyn,"Cropsey Avenue, Bay 8th Street and Poly Place",9,Outdoor,Hard,Y,,40.6063,-74.0166
+B032,Ft. Greene Park,Brooklyn,DeKalb & S. Portland Aves.,6,Outdoor,Hard,N,Lessons Offered,40.6906,-73.9757
+B372,Friends Field,Brooklyn,Ave. L & East 4th St.,2,Outdoor,Hard,Y,,40.6184,-73.9722
+B294,Jackie Robinson,Brooklyn,Malcolm X. Blvd. & Chauncey St.,4,Outdoor,Hard,N,,40.6803,-73.9278
+B210W,J.J. Carty,Brooklyn,95 Street & Fort Hamilton Pkwy.,10,Outdoor,Hard,N,,40.6115,-74.0316
+B166D,Joseph T. McGuire Park,Brooklyn,Avenue W and Bergen,3,Outdoor,Hard,Y,,40.62,-73.8987
+B129,Kaiser Playground,Brooklyn,Neptune Ave. & W. 25th St.,12,Outdoor,Hard,Y,Lessons Offered,40.5785,-73.9946
+B052,Leif Ericson Park,Brooklyn,8th Ave. & 66th St.,9,Outdoor,Hard,N,Lessons Offered,40.6319,-74.0137
+B054,Lincoln Terrace Park,Brooklyn,Buffalo & Rochester Aves.,11,Outdoor,Hard,N,Lessons Offered,40.6665,-73.9255
+B214,Linden Playground,Brooklyn,Linden Blvd. & Vermont St.,5,Outdoor,Hard,N,,40.6584,-73.887
+B251,Manhattan Beach,Brooklyn,Oriental Blvd.,6,Outdoor,Hard,Y,Lessons Offered,40.5777,-73.9399
+B057,Marine Park,Brooklyn,Fillmore Ave. & Stuart St.,15,Outdoor,Hard,Y,Lessons Offered,40.6079,-73.935
+B058,McCarren Tennis Center,Brooklyn,North 13th Street Between Berry Street and Bedford Avenue,7,Indoor,Hard,N,"Lessons are offered. All 7 courts are bubbled during the indoor season (the day after Columbus Day-April 27) and may be rented for a fee. During the outdoor season, there are 6 courts available to Parks tennis permit holders. For bookings or for more information about tennis at McCarren Park, please visit <a href=""https://www.mccarrentennisnyc.com/"">McCarren Tennis Center</a>.",40.7218,-73.9547
+B244,McDonald Avenue Playground,Brooklyn,McDonald Ave. & Ave. S,7,Outdoor,Hard,N,,40.6,-73.9722
+B050,One Van Voorhees Park,Brooklyn,"Pacific, Congress and Hicks Streets",2,Outdoor,Hard,N,,40.6898,-74.0001
+B073,Prospect Park Tennis Center,Brooklyn,Parkside Ave at the Parade Ground,11,Indoor,Clay,N,"Lessons are available. During the indoor season (October 23-May 6), there are 11 bubbled courts that may be rented for a fee. During the outdoor season, 8 courts are available to Parks tennis permit holders.  For more information, visit the <a href=""https://www.prospectpark.org/visit-the-park/places-to-go/tennis-center/"">Prospect Park Alliance tennis page</a>.",40.6513,-73.97
+B082,Shore Road Playground,Brooklyn,Shore Rd. & 95th St.,4,Outdoor,Hard,N,Lessons Offered,40.6125,-74.037
+M028,Fort Washington Park,Manhattan,Hudson River at 170th St.,10,Outdoor,Hard,N,"Lessons offered by Riverside Tennis Association; sign up at <a href=""https://riversidetennis.org/ "">RiversideTennis.org</a>",40.8488,-73.9462
+M159,Frederick Johnson Playground,Manhattan,151st St. east of 7th Ave.,8,Outdoor,Hard,N,Lessons Offered,40.825,-73.9356
+M042,Inwood Hill Park,Manhattan,207th St. and Seaman Ave.,9,Outdoor,Hard,Y,Lessons Offered,40.8697,-73.9217
+Q004,Astoria Park,Queens,21st St. & Hoyt Ave.,14,Outdoor,Hard,N,Lessons Offered,40.7756,-73.9243
+Q005,Baisley Park,Queens,155th St. & 118th Ave.,4,Outdoor,Hard,N,,40.6808,-73.7872
+Q005,Baisley South,Queens,N. Conduit Ave. & 150th St.,4,Outdoor,Hard,N,,40.6696,-73.7884
+Q460,Broad Channel Park,Queens,Crossbay Blvd. and E. 16-E. 18 Rds.,2,Outdoor,Hard,N,,40.6005,-73.8196
+Q008,Brookville Park,Queens,Brookville Blvd. & Southern Pkwy.,6,Outdoor,Hard,N,Lessons Offered,40.6614,-73.7442
+Q121,Det. Keith L. Williams Park,Queens,Liberty Ave. & 173rd St.,10,Outdoor,Hard,Y,,40.7035,-73.7849
+Q015,Forest Park,Queens,Park Lane South & 89th St.,14,Outdoor,Hard,Y,,40.6976,-73.8557
+Q020,Highland Park- Lower Playground,Queens,Elton St. & Jamaica Ave.,18,Outdoor,Hard,N,"10 full courts, 8 36-foot youth courts.",40.6836,-73.8884
+Q102,Juniper Valley Park,Queens,62nd Ave. & 80th St.,8,Outdoor,Hard,N,Lessons Offered,40.7204,-73.876
+Q369,Louis Pasteur Park,Queens,52 Ave. & Marathon Pkwy.,2,Outdoor,Hard,N,,40.7617,-73.735
+Q007,Michaelis Bayswater Park,Queens,32nd St. & Dickens Ave.,6,Outdoor,Hard,N,,40.5986,-73.7683
+Q131,Maurice Park,Queens,"Maurice Ave., LIE Service Rd. Westbound",2,Outdoor,Hard,N,,40.7274,-73.904
+Q092,Police Officer Edward Byrne Park,Queens,North Conduit Ave. & 134-135 Street,4,Outdoor,Hard,N,,40.6672,-73.8071
+Q371,Rockaway Community Park,Queens,Alamdea Ave. btwn B51 & B56,3,Outdoor,Hard,N,,40.5985,-73.7835
+Q448,Roy Wilkins Park,Queens,Merrick Blvd. & 119 Ave.,4,Outdoor,Hard,N,,40.686,-73.77
+Q107,Springfield Park,Queens,147 Ave. & Springfield Ave.,2,Outdoor,Hard,N,,40.6598,-73.7623
+Q051,St. Albans Park,Queens,Merrick Blvd. & 172nd St.,2,Outdoor,Hard,N,,40.6939,-73.7801
+Q413,Victor Hanson Community Center (Rochdale Park),Queens,Guy Brewer Blvd. & 134th Ave.,6,Outdoor,Hard,N,,40.6744,-73.7739
+Q373,East Elmhurst (PS 127),Queens,25 Ave. & 98 St.-100 St.,1,Outdoor,Hard,N,,40.7651,-73.8707
+R015,Charles Kasper Tennis Courts,Staten Island,Bard Ave. & Delafield Place,6,Outdoor,All Weather,N,Lessons Offered,40.6433,-74.1087
+R031,Wolfe's Pond Park,Staten Island,"Cornelia Ave., off of Hylan Blvd.",2,Outdoor,All Weather,Y,Lessons Offered,40.5194,-74.1868
+M104,Sportime at Randall's Island,Manhattan,Randall's Island Park,24,Indoor,Hard,N,"<p>The Sportime Tennis Center is a concession offering 12 courts to <a href=""/things-to-do/tennis"">NYC Parks Tennis Permit</a> holders during the outdoor season, which is from the Friday before Memorial Day through Labor Day. For more information, visit the <a href=https://www.sportimeny.com/manhattan>Sportime Randall&#39;s Island tennis page</a>. Designated NYC Parks Courts:</p>  <ul> 	<li>Walk-ins only for designated NYC Parks courts and Online Reservation System for limited amount of courts to be reserved and paid ahead of time.</li> 	<li>limited to one (1) hour for singles play, and two (2) hours for doubles play, although players may keep playing after their reserved times have ended if courts are available, upon confirming such availability with club staff.</li> 	<li>All players using designated NYC Parks courts must affiliate with SPORTIME as an associate/non-member, and complete a waiver, prior to play. No Exceptions.</li> 	<li>A reserved court is forfeited if the reserving player has not arrived by 5 minutes past the start time.</li> </ul>",40.7943,-73.9198
+M070,Sutton Tennis at Queensboro Oval,Manhattan,York Ave. Between E 59 St. & E 60 St.,8,Indoor,Clay,Y,"Lessons are offered. Six courts are available to NYC Parks tennis permit holders from April 14 - September 14. For booking courts and program information please call or visit <a href=""https://www.suttoneasttennis.com"">Sutton East Tennis Club's</a> website.",40.7594,-73.9602
+Q001A,Commonpoint Queens Tennis and Athletic Center at Alley Pond,Queens,Queens Village 79-20 Winchester Boulevard,16,Indoor,Hard,N,"Lessons offered. During the indoor season (October - April), 11 courts are available to rent for a fee. During the outdoor season (May &ndash; September), 11 courts are available for Parks tennis permit holders. For booking courts and program information please call (718) 255-2127 or visit <a href=""https://www.commonpointqueens.org/hours-locations/tennis/"">Commonpoint Queens Tennis and Athletic Center&rsquo;s website</a>.",40.7394,73.7361
+B407,South Oxford Park,Brooklyn,Cumberland Street between Atlantic Commons and Atlantic Avenue,2,Outdoor,Hard,,,40.6836,-73.9722
+X210,Governor Smith Playground,Bronx,Morris Avenue between E. 151 and E. 153 Streets,3,Outdoor,Hard,,,40.8196,-73.9202
+M308,Washington Market Park,Manhattan,Chambers St. & West St.,1,Outdoor,Hard,,,40.7171,-74.0123
+B025,Cooper Park Tennis Courts,Brooklyn,"Morgan Ave, between Maspeth Ave and Sharon St",2,Outdoor,Hard,N,,40.716,-73.9364
+Q099,World's Fair Playground,Queens,62nd Drive & Grand Central Parkway Extension,1,Outdoor,Hard,N,,40.7375,-73.8464
+R153,Fairview Park,Staten Island,"Bricktown Way, near parking lot",2,Outdoor,Hard,Y,,40.5315,-74.2317
