@@ -9,6 +9,7 @@ const chatLog = document.getElementById("chatLog");
 const inputEl = document.getElementById("userInput");
 const sendBtn = document.getElementById("btnAskAgent");
 const agentStatus = document.getElementById("agentStatus");
+const chatToggle = document.getElementById("chatToggle");
 
 function setAgentStatus(text) {
   if (agentStatus) agentStatus.textContent = text;
@@ -41,6 +42,16 @@ function setLoading(isLoading) {
   sendBtn.disabled = isLoading;
   inputEl.disabled = isLoading;
   setAgentStatus(isLoading ? "Thinking…" : "Ready");
+}
+
+if (chatToggle) {
+  chatToggle.addEventListener("click", () => {
+    const panel = document.querySelector(".chatPanel");
+    if (!panel) return;
+    const isOpen = panel.classList.toggle("open");
+    chatToggle.classList.toggle("open", isOpen);
+    chatToggle.textContent = isOpen ? "Close chat" : "Chat";
+  });
 }
 
 // Initialize map
