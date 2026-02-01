@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 import pandas as pd
+import logging
 
 from app.settings import get_settings
 from app.data_prep import load_or_build
@@ -14,6 +15,9 @@ from app.agent import router as agent_router
 
 
 def create_app():
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
     settings = get_settings()
     app = FastAPI(title=settings.app_name)
 
@@ -50,15 +54,19 @@ def create_app():
 
     @app.post("/geocodeForward", response_model=GeocodeResp)
     def forward(req: GeocodeReq):
+        logger.info("geocodeForward request address=%s", req.address)
         result = geocode_forward(req.address)
         if not result:
+            logger.warning("geocodeForward failed address=%s", req.address)
             raise HTTPException(status_code=503, detail="Geocoding service unavailable")
         return GeocodeResp(**result)
 
     @app.post("/geocodeReverse", response_model=GeocodeResp)
     def reverse(req: ReverseReq):
+        logger.info("geocodeReverse request lat=%s lon=%s", req.lat, req.lon)
         result = geocode_reverse(req.lat, req.lon)
         if not result:
+            logger.warning("geocodeReverse failed lat=%s lon=%s", req.lat, req.lon)
             raise HTTPException(status_code=503, detail="Geocoding service unavailable")
         return GeocodeResp(**result)
 
