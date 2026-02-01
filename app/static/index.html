@@ -162,8 +162,8 @@
       position: fixed;
       right: 24px;
       bottom: 24px;
-      width: min(720px, 96vw);
-      height: min(82vh, 820px);
+      width: min(380px, 92vw);
+      height: min(380px, 45vh);
       display: flex;
       flex-direction: column;
       z-index: 1000;
@@ -171,11 +171,10 @@
       opacity: 1;
       pointer-events: auto;
       transition: transform .2s ease, opacity .2s ease;
-      border: 3px solid rgba(79,124,255,.65);
+      border: 2px solid rgba(79,124,255,.65);
       box-shadow:
-        0 30px 90px rgba(0,0,0,.7),
-        0 0 0 3px rgba(79,124,255,.45),
-        0 0 120px rgba(79,124,255,.45);
+        0 18px 50px rgba(0,0,0,.55),
+        0 0 0 2px rgba(79,124,255,.35);
       background: #0b0f1e;
     }
     .chatPanel.open{
@@ -204,7 +203,7 @@
       border: 1px solid rgba(255,255,255,.12);
     }
     .chatToggle.open{
-      bottom: calc(24px + min(86vh, 860px) + 12px);
+      bottom: calc(24px + min(380px, 45vh) + 12px);
     }
     .aiBadge{
       font-size: 10px;
