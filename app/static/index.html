@@ -162,20 +162,21 @@
       position: fixed;
       right: 24px;
       bottom: 24px;
-      width: min(680px, 98vw);
-      max-height: min(86vh, 860px);
+      width: min(720px, 96vw);
+      height: min(82vh, 820px);
       display: flex;
       flex-direction: column;
-      z-index: 30;
-      transform: translateY(120%);
-      opacity: 0;
-      pointer-events: none;
+      z-index: 1000;
+      transform: none;
+      opacity: 1;
+      pointer-events: auto;
       transition: transform .2s ease, opacity .2s ease;
-      border: 2px solid rgba(255,255,255,.25);
+      border: 3px solid rgba(79,124,255,.65);
       box-shadow:
-        0 30px 80px rgba(0,0,0,.65),
-        0 0 0 2px rgba(79,124,255,.35),
-        0 0 90px rgba(79,124,255,.35);
+        0 30px 90px rgba(0,0,0,.7),
+        0 0 0 3px rgba(79,124,255,.45),
+        0 0 120px rgba(79,124,255,.45);
+      background: #0b0f1e;
     }
     .chatPanel.open{
       transform: translateY(0);
@@ -185,8 +186,7 @@
     .chatPanel #chatArea{
       display:flex;
       flex-direction:column;
-      min-height: 520px;
-      max-height: 78vh;
+      height: 100%;
     }
     .chatPanel #chatLog{
       flex:1;
@@ -282,7 +282,7 @@
       display:flex;
       flex-direction:column;
       gap: 10px;
-      background: rgba(11,13,18,.35);
+      background: #0e1326;
     }
 
     .msgRow{ display:flex; }
@@ -319,7 +319,7 @@
       display:flex;
       gap: 10px;
       align-items:center;
-      background: #0c1022;
+      background: #0a0f22;
     }
 
     .chatInput input{
