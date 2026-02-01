@@ -183,9 +183,17 @@ async function geocodeForwardWithRetry(address, attempts = 2) {
         cache: "no-store",
       });
 
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        try {
+          return await res.json();
+        } catch (e) {
+          const raw = await res.clone().text();
+          throw new Error(`Invalid JSON response: ${raw.slice(0, 300)}`);
+        }
+      }
 
-      lastErr = new Error(`HTTP ${res.status}`);
+      const errBody = await res.text();
+      lastErr = new Error(`HTTP ${res.status}: ${errBody.slice(0, 300)}`);
     } catch (e) {
       lastErr = e;
     }
@@ -214,7 +222,11 @@ async function onSearch() {
   } catch (e) {
     console.error(e);
     statusEl.textContent = "";
-    alert("Address not found (or geocoder temporarily busy). Try again in a moment.");
+    alert(
+      `Address not found (or geocoder temporarily busy). Try again in a moment.\n\nDetails: ${
+        e && e.message ? e.message : "Unknown error"
+      }`
+    );
   }
 }
 
