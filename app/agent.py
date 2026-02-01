@@ -8,7 +8,7 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException
 from openai import OpenAI
 
-from app.CONSTANTS import CLEAN_CSV
+from app.CONSTANTS import CLEAN_CSV, TENNIS_CSV
 from app.nearest import NearestIndex
 from app.pydantic_models import AgentRequest
 from app.geocode import geocode_forward
@@ -24,10 +24,27 @@ def _get_client() -> OpenAI:
 
 
 @lru_cache(maxsize=1)
-def _load_df() -> pd.DataFrame:
-    if not CLEAN_CSV.exists():
-        raise RuntimeError(f"CSV not found at: {CLEAN_CSV}")
-    df = pd.read_csv(CLEAN_CSV)
+def _normalize_sport(sport: Optional[str]) -> Optional[str]:
+    s = (sport or "handball").strip().lower()
+    if s in {"handball", "tennis"}:
+        return s
+    if s in {"both", "all"}:
+        return "both"
+    return None
+
+
+@lru_cache(maxsize=2)
+def _load_df(sport: str) -> pd.DataFrame:
+    if sport == "handball":
+        path = CLEAN_CSV
+    elif sport == "tennis":
+        path = TENNIS_CSV
+    else:
+        raise RuntimeError(f"Unsupported sport for CSV load: {sport}")
+
+    if not path.exists():
+        raise RuntimeError(f"CSV not found at: {path}")
+    df = pd.read_csv(path)
 
     if "Lat" in df.columns:
         df["Lat"] = pd.to_numeric(df["Lat"], errors="coerce")
@@ -40,17 +57,27 @@ def _load_df() -> pd.DataFrame:
     return df
 
 
-@lru_cache(maxsize=1)
-def _nearest_index() -> NearestIndex:
-    return NearestIndex(_load_df())
+@lru_cache(maxsize=2)
+def _nearest_index(sport: str) -> NearestIndex:
+    return NearestIndex(_load_df(sport))
 
 # Tools (CSV-backed)
-def tool_dataset_summary() -> Dict[str, Any]:
-    df = _load_df()
+def tool_dataset_summary(sport: str = "handball") -> Dict[str, Any]:
+    sport_norm = _normalize_sport(sport)
+    if not sport_norm:
+        return {"error": "sport must be handball, tennis, or both"}
+    if sport_norm == "both":
+        return {
+            "handball": tool_dataset_summary("handball"),
+            "tennis": tool_dataset_summary("tennis"),
+        }
+
+    df = _load_df(sport_norm)
     locations = int(len(df))
     total_courts = int(df["Num_Of_Courts"].sum()) if "Num_Of_Courts" in df.columns else locations
     boroughs = sorted([b for b in df["Borough"].dropna().unique()]) if "Borough" in df.columns else []
     return {
+        "sport": sport_norm,
         "locations": locations,
         "total_courts": total_courts,
         "boroughs": boroughs,
@@ -58,8 +85,18 @@ def tool_dataset_summary() -> Dict[str, Any]:
     }
 
 
-def tool_courts_by_borough(borough: str) -> Dict[str, Any]:
-    df = _load_df()
+def tool_courts_by_borough(borough: str, sport: str = "handball") -> Dict[str, Any]:
+    sport_norm = _normalize_sport(sport)
+    if not sport_norm:
+        return {"error": "sport must be handball, tennis, or both"}
+    if sport_norm == "both":
+        return {
+            "borough": borough,
+            "handball": tool_courts_by_borough(borough, "handball"),
+            "tennis": tool_courts_by_borough(borough, "tennis"),
+        }
+
+    df = _load_df(sport_norm)
     if "Borough" not in df.columns:
         return {"error": "CSV does not contain Borough column."}
 
@@ -84,11 +121,20 @@ def tool_courts_by_borough(borough: str) -> Dict[str, Any]:
     sub = df[df["Borough"].astype(str).str.lower() == b]
     locations = int(len(sub))
     total_courts = int(sub["Num_Of_Courts"].sum()) if "Num_Of_Courts" in sub.columns else locations
-    return {"borough": borough, "locations": locations, "total_courts": total_courts}
+    return {"sport": sport_norm, "borough": borough, "locations": locations, "total_courts": total_courts}
 
 
-def tool_search_courts(name_contains: str, limit: int = 10) -> Dict[str, Any]:
-    df = _load_df()
+def tool_search_courts(name_contains: str, limit: int = 10, sport: str = "handball") -> Dict[str, Any]:
+    sport_norm = _normalize_sport(sport)
+    if not sport_norm:
+        return {"error": "sport must be handball, tennis, or both"}
+    if sport_norm == "both":
+        h = tool_search_courts(name_contains, limit, "handball")
+        t = tool_search_courts(name_contains, limit, "tennis")
+        merged = (h.get("results", []) + t.get("results", []))[: max(1, min(int(limit), 25))]
+        return {"query": name_contains, "count": len(merged), "results": merged}
+
+    df = _load_df(sport_norm)
     if "Name" not in df.columns:
         return {"error": "CSV does not contain Name column."}
 
@@ -105,13 +151,25 @@ def tool_search_courts(name_contains: str, limit: int = 10) -> Dict[str, Any]:
             "Num_Of_Courts": int(r.get("Num_Of_Courts")) if "Num_Of_Courts" in df.columns else None,
             "Lat": float(r.get("Lat")),
             "Lon": float(r.get("Lon")),
+            "Sport": sport_norm,
         })
     return {"query": name_contains, "count": len(results), "results": results}
 
 
-def tool_nearest_courts(lat: float, lon: float, limit: int = 5) -> Dict[str, Any]:
-    idx = _nearest_index()
+def tool_nearest_courts(lat: float, lon: float, limit: int = 5, sport: str = "handball") -> Dict[str, Any]:
+    sport_norm = _normalize_sport(sport)
+    if not sport_norm:
+        return {"error": "sport must be handball, tennis, or both"}
+
     k = max(1, min(int(limit), 10))
+    if sport_norm == "both":
+        h = tool_nearest_courts(lat, lon, limit, "handball")
+        t = tool_nearest_courts(lat, lon, limit, "tennis")
+        merged = (h.get("results", []) + t.get("results", []))
+        merged = sorted(merged, key=lambda r: r.get("distance_km", 0.0))[:k]
+        return {"lat": lat, "lon": lon, "count": len(merged), "results": merged}
+
+    idx = _nearest_index(sport_norm)
     rows = idx.query_k(lat=float(lat), lon=float(lon), k=k)
     out = []
     for _, r in rows.iterrows():
@@ -122,11 +180,12 @@ def tool_nearest_courts(lat: float, lon: float, limit: int = 5) -> Dict[str, Any
             "Lat": float(r.get("Lat")),
             "Lon": float(r.get("Lon")),
             "distance_km": float(r.get("distance_km", 0.0)),
+            "Sport": sport_norm,
         })
     return {"lat": lat, "lon": lon, "count": len(out), "results": out}
 
 
-def tool_nearest_to_address(address: str, limit: int = 5) -> Dict[str, Any]:
+def tool_nearest_to_address(address: str, limit: int = 5, sport: str = "handball") -> Dict[str, Any]:
     geo = geocode_forward(address)
     if not geo:
         return {
@@ -136,7 +195,7 @@ def tool_nearest_to_address(address: str, limit: int = 5) -> Dict[str, Any]:
     return {
         "address": address,
         "display_name": geo.get("display_name"),
-        **tool_nearest_courts(lat=geo["lat"], lon=geo["lon"], limit=limit),
+        **tool_nearest_courts(lat=geo["lat"], lon=geo["lon"], limit=limit, sport=sport),
     }
 
 
@@ -144,8 +203,14 @@ TOOLS = [
     {
         "type": "function",
         "name": "dataset_summary",
-        "description": "Get high-level summary of the handball courts dataset (counts, boroughs, columns).",
-        "parameters": {"type": "object", "properties": {}, "required": []},
+        "description": "Get high-level summary of the courts dataset (counts, boroughs, columns).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "sport": {"type": "string", "enum": ["handball", "tennis", "both"]},
+            },
+            "required": [],
+        },
     },
     {
         "type": "function",
@@ -155,6 +220,7 @@ TOOLS = [
             "type": "object",
             "properties": {
                 "borough": {"type": "string"},
+                "sport": {"type": "string", "enum": ["handball", "tennis", "both"]},
             },
             "required": ["borough"],
         },
@@ -168,6 +234,7 @@ TOOLS = [
             "properties": {
                 "name_contains": {"type": "string"},
                 "limit": {"type": "integer", "minimum": 1, "maximum": 25},
+                "sport": {"type": "string", "enum": ["handball", "tennis", "both"]},
             },
             "required": ["name_contains"],
         },
@@ -182,6 +249,7 @@ TOOLS = [
                 "lat": {"type": "number"},
                 "lon": {"type": "number"},
                 "limit": {"type": "integer", "minimum": 1, "maximum": 10},
+                "sport": {"type": "string", "enum": ["handball", "tennis", "both"]},
             },
             "required": ["lat", "lon"],
         },
@@ -195,6 +263,7 @@ TOOLS = [
             "properties": {
                 "address": {"type": "string"},
                 "limit": {"type": "integer", "minimum": 1, "maximum": 10},
+                "sport": {"type": "string", "enum": ["handball", "tennis", "both"]},
             },
             "required": ["address"],
         },
@@ -218,7 +287,8 @@ def _run_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
 
 @router.get("/agent_health")
 def agent_health():
-    _ = _load_df()
+    _ = _load_df("handball")
+    _ = _load_df("tennis")
     return {"status": "ok"}
 
 
@@ -228,15 +298,21 @@ async def agent(request: AgentRequest):
     if not query:
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
+    q_lower = query.lower()
+    ambiguous_sport = ("court" in q_lower) and ("handball" not in q_lower) and ("tennis" not in q_lower)
+
     client = _get_client()
 
     input_list: List[Dict[str, Any]] = [
         {
             "role": "system",
             "content": (
-                "You are an assistant for a NYC Handball Courts web app. "
+                "You are an assistant for a NYC Handball + Tennis Courts web app. "
                 "Answer using the dataset tools when relevant. "
                 "Be concise, correct, and include numbers when asked. "
+                "If the user says 'courts' without specifying sport, ask: "
+                "'Do you mean handball courts to practice against a wall, or tennis courts?' "
+                "If the user doesn't specify sport but wants court results, default to sport=both. "
                 "If the user's request is ambiguous, ask a brief follow-up question. "
                 "If the user asks something unrelated to the dataset, say you can only answer court/dataset questions and suggest a relevant example."
             ),
@@ -262,6 +338,14 @@ async def agent(request: AgentRequest):
     for item in resp.output:
         if getattr(item, "type", None) == "function_call":
             args = json.loads(item.arguments or "{}")
+            if ambiguous_sport and "sport" not in args and item.name in {
+                "dataset_summary",
+                "courts_by_borough",
+                "search_courts",
+                "nearest_courts",
+                "nearest_to_address",
+            }:
+                args["sport"] = "both"
             result = _run_tool(item.name, args)
             if isinstance(result, dict) and result.get("error"):
                 logger.info("agent tool error name=%s error=%s", item.name, result.get("error"))
