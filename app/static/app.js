@@ -13,6 +13,14 @@ function setAgentStatus(text) {
   if (agentStatus) agentStatus.textContent = text;
 }
 
+function setText(el, text, label) {
+  if (!el) {
+    console.warn(`Missing element: ${label}`);
+    return;
+  }
+  el.textContent = text;
+}
+
 function appendMessage(role, text) {
   const row = document.createElement("div");
   row.className = `msgRow ${role === "me" ? "me" : "bot"}`;
@@ -108,16 +116,16 @@ async function fetchNearest(lat, lon) {
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
-      statusEl.textContent = `Nearest failed: HTTP ${res.status}`;
-      return;
-    }
-    const data = await res.json();
-    statusEl.textContent = "";
-    addCourts(data.results || []);
-  } catch (e) {
-    statusEl.textContent = "Failed to load nearby courts. See console for details.";
-    console.error(e);
+    setText(statusEl, `Nearest failed: HTTP ${res.status}`, "status");
+    return;
   }
+  const data = await res.json();
+  setText(statusEl, "", "status");
+  addCourts(data.results || []);
+} catch (e) {
+  setText(statusEl, "Failed to load nearby courts. See console for details.", "status");
+  console.error(e);
+}
 }
 
 // Reverse geocode
@@ -130,13 +138,13 @@ async function reverseGeocode(lat, lon) {
       cache: "no-store",
     });
     if (!res.ok) {
-      addrLabel.textContent = "";
+      setText(addrLabel, "", "addrLabel");
       return;
     }
     const data = await res.json();
-    addrLabel.textContent = data.display_name || "";
+    setText(addrLabel, data.display_name || "", "addrLabel");
   } catch {
-    addrLabel.textContent = "";
+    setText(addrLabel, "", "addrLabel");
   }
 }
 
@@ -208,7 +216,7 @@ async function onSearch() {
   const address = document.getElementById("address").value.trim();
   if (!address) return;
 
-  statusEl.textContent = "Searching address…";
+  setText(statusEl, "Searching address…", "status");
 
   try {
     const data = await geocodeForwardWithRetry(address, 2);
@@ -216,12 +224,12 @@ async function onSearch() {
     setUserMarker(data.lat, data.lon, data.display_name || "Selected location");
     if (userMarker) userMarker.openPopup();
 
-    addrLabel.textContent = data.display_name || "";
-    statusEl.textContent = "";
+    setText(addrLabel, data.display_name || "", "addrLabel");
+    setText(statusEl, "", "status");
     fetchNearest(data.lat, data.lon);
   } catch (e) {
     console.error(e);
-    statusEl.textContent = "";
+    setText(statusEl, "", "status");
     alert(
       `Address not found (or geocoder temporarily busy). Try again in a moment.\n\nDetails: ${
         e && e.message ? e.message : "Unknown error"
