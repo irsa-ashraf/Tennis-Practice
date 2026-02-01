@@ -38,8 +38,6 @@ app.include_router(agent_router)
 
 # Load data and build nearest index
 df: pd.DataFrame = load_or_build()
-# Just added new tennis file for added features
-tennis_df = pd.read_csv("data/tennis_courts_clean.csv")
 
 _df_for_index = df.rename(columns={c: c.lower() for c in df.columns})
 idx = NearestIndex(_df_for_index)
