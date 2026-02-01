@@ -195,6 +195,8 @@
       border-radius: 999px;
       padding: 12px 16px;
       box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      background: linear-gradient(180deg, #22c55e, rgba(34,197,94,.85));
+      border: 1px solid rgba(255,255,255,.12);
     }
     .chatToggle.open{
       bottom: calc(16px + min(70vh, 640px) + 12px);
@@ -310,13 +312,6 @@
       width: auto;
     }
 
-    .chatPanel{
-      width: 100%;
-      max-width: 560px;
-      margin: 0 auto;
-    }
-
-
     .hint{
       font-size: 12px;
       color: var(--muted);
@@ -365,7 +360,7 @@
   </main>
 
   <div class="bottom">
-    <div class="panel chatPanel">
+    <div class="panel chatPanel open">
       <div class="panelHead">
         <h2>AI Assistant</h2>
         <div class="pill" id="agentStatus">Ready</div>
@@ -398,7 +393,7 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <button id="chatToggle" class="chatToggle">Chat</button>
+  <button id="chatToggle" class="chatToggle open">Close chat</button>
 
   <script src="/static/app.js" defer></script>
 </body>
