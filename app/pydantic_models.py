@@ -66,7 +66,7 @@ class ReverseReq(BaseModel):
 
 class Court(BaseModel):
     '''
-    Model representing a tennis court's information.
+    Model representing a court's information.
 
     Attributes:
         court_id (int): Unique identifier for the court.
@@ -75,6 +75,7 @@ class Court(BaseModel):
         lat (float): Latitude of the court location.
         lon (float): Longitude of the court location.
         distance_km (Optional[float]): Distance from a given point in kilometers. Defaults to None.
+        sport (Optional[str]): Sport type (e.g., "handball", "tennis").
 
     Example:
         {
@@ -83,7 +84,8 @@ class Court(BaseModel):
             "borough": "Manhattan",
             "lat": 40.7265,
             "lon": -73.9815,
-            "distance_km": 2.3
+            "distance_km": 2.3,
+            "sport": "handball"
         }
     '''
 
@@ -95,6 +97,7 @@ class Court(BaseModel):
     Num_Of_Courts: Optional[int] = None
     Location: Optional[str] = ""
     Distance_Km: Optional[float] = None
+    Sport: Optional[str] = None
 
 
 class NearestResp(BaseModel):
@@ -147,5 +150,4 @@ class AgentRequest(BaseModel):
     '''
 
     query: Optional[str] = Field(..., min_length=2)
-
 

@@ -10,13 +10,14 @@ class NearestIndex:
         # Expect columns: court_id, name, borough, lat, lon
         self.df = df.reset_index(drop=True).copy()
         coords = self.df[["Lat", "Lon"]].to_numpy(dtype=float)
-        self.coords_rad = np.radians(coords)              
+        self.coords_rad = np.radians(coords)
+        # BallTree(X, leaf_size, metric, **kwargs) where X = (n_samples, n_features)            
         self.tree = BallTree(self.coords_rad, metric="haversine")
 
     def query_k(self, lat: float, lon: float, k: int = 10) -> pd.DataFrame:
         k = min(k, len(self.df))
         q = np.radians([[lat, lon]])                     
-        dist_rad, idx = self.tree.query(q, k=k)
+        dist_rad, idx = self.tree.query(q, k=k)  # distance and indices of 10 nearest courts
         dist_km = (dist_rad[0] * EARTH_RADIUS_KM)
         rows = self.df.iloc[idx[0]].copy().reset_index(drop=True)
         rows["distance_km"] = np.round(dist_km, 2)
