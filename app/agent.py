@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
@@ -13,6 +14,7 @@ from app.pydantic_models import AgentRequest
 from app.geocode import geocode_forward
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 def _get_client() -> OpenAI:
     api_key = os.getenv("NYCPLACES_OPENAI_API_KEY")
@@ -65,6 +67,20 @@ def tool_courts_by_borough(borough: str) -> Dict[str, Any]:
     if not b:
         return {"error": "borough is required"}
 
+    # Normalize common abbreviations
+    aliases = {
+        "bk": "brooklyn",
+        "bx": "bronx",
+        "mn": "manhattan",
+        "si": "staten island",
+        "queens": "queens",
+        "brooklyn": "brooklyn",
+        "bronx": "bronx",
+        "manhattan": "manhattan",
+        "staten island": "staten island",
+    }
+    b = aliases.get(b, b)
+
     sub = df[df["Borough"].astype(str).str.lower() == b]
     locations = int(len(sub))
     total_courts = int(sub["Num_Of_Courts"].sum()) if "Num_Of_Courts" in sub.columns else locations
@@ -113,7 +129,10 @@ def tool_nearest_courts(lat: float, lon: float, limit: int = 5) -> Dict[str, Any
 def tool_nearest_to_address(address: str, limit: int = 5) -> Dict[str, Any]:
     geo = geocode_forward(address)
     if not geo:
-        return {"error": "Address not found"}
+        return {
+            "error": "Address not found",
+            "hint": "Try adding a borough, ZIP code, or 'NYC'. Example: '399 Park Ave, Manhattan, NY'.",
+        }
     return {
         "address": address,
         "display_name": geo.get("display_name"),
@@ -218,18 +237,23 @@ async def agent(request: AgentRequest):
                 "You are an assistant for a NYC Handball Courts web app. "
                 "Answer using the dataset tools when relevant. "
                 "Be concise, correct, and include numbers when asked. "
-                "If the user asks something unrelated to the dataset, say you can only answer court/dataset questions."
+                "If the user's request is ambiguous, ask a brief follow-up question. "
+                "If the user asks something unrelated to the dataset, say you can only answer court/dataset questions and suggest a relevant example."
             ),
         },
         {"role": "user", "content": query},
     ]
 
     # Ask model
-    resp = client.responses.create(
-        model="gpt-5-mini",
-        tools=TOOLS,
-        input=input_list,
-    )
+    try:
+        resp = client.responses.create(
+            model="gpt-5-mini",
+            tools=TOOLS,
+            input=input_list,
+        )
+    except Exception as e:
+        logger.exception("agent: initial model call failed")
+        raise HTTPException(status_code=503, detail="Assistant is temporarily unavailable. Please try again.") from e
 
     # Add model output to the running input list
     input_list += resp.output
@@ -239,6 +263,8 @@ async def agent(request: AgentRequest):
         if getattr(item, "type", None) == "function_call":
             args = json.loads(item.arguments or "{}")
             result = _run_tool(item.name, args)
+            if isinstance(result, dict) and result.get("error"):
+                logger.info("agent tool error name=%s error=%s", item.name, result.get("error"))
 
             input_list.append(
                 {
@@ -249,11 +275,15 @@ async def agent(request: AgentRequest):
             )
 
     # Ask model again to produce final user-facing answer
-    final = client.responses.create(
-        model="gpt-5-mini",
-        tools=TOOLS,
-        input=input_list,
-        instructions="Answer the user clearly and concisely. Use the tool results. Do not mention tool call IDs.",
-    )
+    try:
+        final = client.responses.create(
+            model="gpt-5-mini",
+            tools=TOOLS,
+            input=input_list,
+            instructions="Answer the user clearly and concisely. Use the tool results. Do not mention tool call IDs.",
+        )
+    except Exception as e:
+        logger.exception("agent: final model call failed")
+        raise HTTPException(status_code=503, detail="Assistant is temporarily unavailable. Please try again.") from e
 
     return {"text": final.output_text}
