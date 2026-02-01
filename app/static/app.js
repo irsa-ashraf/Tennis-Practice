@@ -2,6 +2,7 @@ const API_BASE = "";
 
 const statusEl = document.getElementById("status");
 const addrLabel = document.getElementById("addrLabel");
+const sportSelect = document.getElementById("sportSelect");
 
 // Chat UI
 const chatLog = document.getElementById("chatLog");
@@ -60,12 +61,35 @@ const redIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
+const sportIcons = {
+  handball: new L.Icon({
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  }),
+  tennis: new L.Icon({
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  }),
+};
+
 // User marker
 let userMarker = null;
+let lastCoords = null;
 function setUserMarker(lat, lon, label = "You are here") {
   if (userMarker) userMarker.remove();
   userMarker = L.marker([lat, lon], { icon: redIcon }).addTo(map).bindPopup(label);
   map.setView([lat, lon], 14);
+  lastCoords = { lat, lon };
 }
 
 // Court markers
@@ -80,6 +104,8 @@ function addCourts(list) {
   const bounds = [];
 
   list.forEach((c) => {
+    const sport = (c.Sport || "handball").toLowerCase();
+    const sportLabel = sport ? sport.charAt(0).toUpperCase() + sport.slice(1) : "";
     const name = c.Name ?? "";
     const borough = c.Borough ?? "";
     const rawDist = c.Distance_Km;
@@ -91,12 +117,14 @@ function addCourts(list) {
     const html = `
       <div style="font-size:12px;line-height:1.3">
         <b>${name}</b><br>
+        ${sportLabel ? `Sport: ${sportLabel}<br>` : ""}
         ${borough ? `${borough}<br>` : ""}
         ${dist ? `${dist}<br>` : ""}
         ${c.Num_Of_Courts ? `Number of Courts: ${c.Num_Of_Courts}<br>` : ""}
       </div>`;
 
-    const m = L.marker([lat, lon]).addTo(map).bindPopup(html);
+    const icon = sportIcons[sport] || sportIcons.handball;
+    const m = L.marker([lat, lon], { icon }).addTo(map).bindPopup(html);
     courtMarkers.push(m);
     bounds.push([lat, lon]);
   });
@@ -109,9 +137,10 @@ function addCourts(list) {
 
 // Fetch nearest courts
 async function fetchNearest(lat, lon) {
+  const sport = (sportSelect && sportSelect.value) || "handball";
   const url = `${API_BASE}/nearest?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(
     lon
-  )}&limit=10`;
+  )}&limit=10&sport=${encodeURIComponent(sport)}`;
 
   try {
     const res = await fetch(url, { cache: "no-store" });
@@ -236,6 +265,14 @@ async function onSearch() {
       }`
     );
   }
+}
+
+if (sportSelect) {
+  sportSelect.addEventListener("change", () => {
+    if (lastCoords) {
+      fetchNearest(lastCoords.lat, lastCoords.lon);
+    }
+  });
 }
 
 // -------------------- Agent --------------------

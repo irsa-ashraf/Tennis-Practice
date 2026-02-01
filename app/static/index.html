@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>NYC Handball Courts</title>
+  <title>NYC Handball + Tennis Courts</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Leaflet CSS -->
@@ -105,12 +105,58 @@
     }
     input[type="text"]::placeholder{ color: rgba(139,147,167,.8); }
 
+    select{
+      background: rgba(19,23,40,.85);
+      border:1px solid var(--border);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      outline:none;
+    }
+
+    .selectWrap{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:0 6px;
+      border:1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(19,23,40,.65);
+    }
+    .selectWrap label{
+      font-size:12px;
+      color: var(--muted);
+      padding-left:6px;
+    }
+
     #status{
       font-size:12px;
       padding:8px 16px;
       color: var(--warn);
       min-height: 18px;
     }
+
+    #legend{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      padding:0 16px 8px 16px;
+      font-size:12px;
+      color: var(--muted);
+    }
+    .legendItem{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .legendDot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      display:inline-block;
+    }
+    .legendDot.handball{ background:#2563eb; }
+    .legendDot.tennis{ background:#16a34a; }
 
     main{ flex:1; padding: 0 16px 22px 16px; }
     #map{
@@ -247,18 +293,30 @@
 <body>
   <header>
     <div class="brand">
-      <h1>NYC Handball Courts Finder</h1>
+      <h1>NYC Handball + Tennis Courts Finder</h1>
       <div class="sub">Map + nearest courts + AI assistant</div>
     </div>
 
     <div id="controls">
       <button id="btnLocate">Use my location</button>
+      <div class="selectWrap">
+        <label for="sportSelect">Sport</label>
+        <select id="sportSelect">
+          <option value="handball" selected>Handball</option>
+          <option value="tennis">Tennis</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
       <input id="address" type="text" placeholder="Enter an address, e.g. 399 Park Ave, NYC">
       <button id="btnSearch" class="ghost">Search</button>
     </div>
   </header>
 
   <div id="status"></div>
+  <div id="legend">
+    <div class="legendItem"><span class="legendDot handball"></span>Handball</div>
+    <div class="legendItem"><span class="legendDot tennis"></span>Tennis</div>
+  </div>
 
   <main>
     <div id="map"></div>
@@ -271,13 +329,13 @@
         <div class="pill" id="agentStatus">Ready</div>
       </div>
 
-      <div class="hint">Try: “How many handball courts are in Manhattan?” or “What’s the closest court to Williamsburg?”</div>
+      <div class="hint">Try: “How many handball courts are in Manhattan?” or “What’s the closest tennis court to Williamsburg?”</div>
 
       <div id="chatArea">
         <div id="chatLog"></div>
 
         <div class="chatInput">
-          <input id="userInput" type="text" placeholder="Ask me about handball courts..." />
+          <input id="userInput" type="text" placeholder="Ask me about handball or tennis courts..." />
           <button id="btnAskAgent">Send</button>
         </div>
       </div>
