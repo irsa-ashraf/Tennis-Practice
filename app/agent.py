@@ -16,6 +16,29 @@ from app.geocode import geocode_forward
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
+def _extract_output_text(resp) -> str:
+    text = getattr(resp, "output_text", None)
+    if text:
+        return text
+
+    out = getattr(resp, "output", None) or []
+    parts = []
+    for item in out:
+        item_type = getattr(item, "type", None)
+        if item_type == "output_text":
+            t = getattr(item, "text", None)
+            if t:
+                parts.append(t)
+        elif item_type == "message":
+            content = getattr(item, "content", None) or []
+            for c in content:
+                if getattr(c, "type", None) == "output_text":
+                    t = getattr(c, "text", None)
+                    if t:
+                        parts.append(t)
+    return "\n".join(parts).strip()
+
 def _get_client() -> OpenAI:
     api_key = os.getenv("NYCPLACES_OPENAI_API_KEY")
     if not api_key:
@@ -370,4 +393,9 @@ async def agent(request: AgentRequest):
         logger.exception("agent: final model call failed")
         raise HTTPException(status_code=503, detail="Assistant is temporarily unavailable. Please try again.") from e
 
-    return {"text": final.output_text}
+    text = _extract_output_text(final)
+    if not text:
+        logger.warning("agent: empty response text from model")
+        return {"text": "Sorry — I couldn't generate a response. Please try again."}
+
+    return {"text": text}
